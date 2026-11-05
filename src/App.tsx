@@ -11,7 +11,7 @@ import { UserLoginView } from './views/UserLoginView';
 import { SupportModal } from './components/SupportModal';
 import { DepositModal } from './components/DepositModal';
 import { TransferModal } from './components/TransferModal';
-import { ShieldCheck, Headphones, ExternalLink } from 'lucide-react';
+import { Headphones, Home, TrendingUp, ArrowLeftRight, Clock, User } from 'lucide-react';
 
 const CookieConsentBanner: React.FC = () => {
   const [accepted, setAccepted] = React.useState(() => {
@@ -57,8 +57,7 @@ const AppContent: React.FC = () => {
       <Header />
 
       {/* Main Routed Content */}
-      <main className="flex-1 pb-16">
-        {/* If user navigates to Admin tab, always show Admin Panel */}
+      <main className="flex-1 pb-24 md:pb-12">
         {activeTab === 'admin' ? (
           <AdminPanel />
         ) : !isUserLoggedIn || activeTab === 'login' ? (
@@ -79,12 +78,80 @@ const AppContent: React.FC = () => {
       <DepositModal />
       <TransferModal />
 
-      {/* Cookie Banner matching cptmarkets.com screenshot */}
+      {/* Cookie Banner */}
       <CookieConsentBanner />
 
-      {/* Bottom Footer (Only show when not in admin view or login screen) */}
+      {/* Mobile Bottom Navigation Bar (Home, Market, Trade, History, Account) */}
+      {isUserLoggedIn && activeTab !== 'admin' && activeTab !== 'login' && (
+        <nav
+          aria-label="Mobile Navigation"
+          className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-[#0c1017]/95 backdrop-blur-lg border-t border-[#1a2234] py-2 px-3 flex items-center justify-around select-none shadow-[0_-4px_25px_rgba(0,0,0,0.6)]"
+        >
+          <button
+            onClick={() => setActiveTab('home')}
+            className={`flex flex-col items-center gap-1 py-1 px-3 rounded-lg transition-colors cursor-pointer ${
+              activeTab === 'home'
+                ? 'text-amber-400 font-bold'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Home className="w-5 h-5" />
+            <span className="text-[10px]">Home</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('market')}
+            className={`flex flex-col items-center gap-1 py-1 px-3 rounded-lg transition-colors cursor-pointer ${
+              activeTab === 'market'
+                ? 'text-amber-400 font-bold'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <TrendingUp className="w-5 h-5" />
+            <span className="text-[10px]">Market</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('trade')}
+            className={`flex flex-col items-center gap-1 py-1 px-3 rounded-lg transition-colors cursor-pointer ${
+              activeTab === 'trade'
+                ? 'text-amber-400 font-bold'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <ArrowLeftRight className="w-5 h-5" />
+            <span className="text-[10px]">Trade</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('history')}
+            className={`flex flex-col items-center gap-1 py-1 px-3 rounded-lg transition-colors cursor-pointer ${
+              activeTab === 'history'
+                ? 'text-amber-400 font-bold'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Clock className="w-5 h-5" />
+            <span className="text-[10px]">History</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('account')}
+            className={`flex flex-col items-center gap-1 py-1 px-3 rounded-lg transition-colors cursor-pointer ${
+              activeTab === 'account'
+                ? 'text-amber-400 font-bold'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <User className="w-5 h-5" />
+            <span className="text-[10px]">Account</span>
+          </button>
+        </nav>
+      )}
+
+      {/* Bottom Footer (Clean footer without admin button) */}
       {activeTab !== 'admin' && activeTab !== 'login' && isUserLoggedIn && (
-        <footer className="bg-[#080b10] border-t border-[#181d2a] py-8 px-4 sm:px-6 text-xs text-slate-400">
+        <footer className="bg-[#080b10] border-t border-[#181d2a] py-6 px-4 sm:px-6 text-xs text-slate-400">
           <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <span className="font-extrabold text-white">CPT</span>
@@ -96,17 +163,10 @@ const AppContent: React.FC = () => {
             <div className="flex items-center gap-6 text-slate-400">
               <button
                 onClick={() => setIsSupportOpen(true)}
-                className="hover:text-amber-400 transition-colors flex items-center gap-1.5"
+                className="hover:text-amber-400 transition-colors flex items-center gap-1.5 cursor-pointer"
               >
                 <Headphones className="w-3.5 h-3.5" />
                 <span>24/7 Official Support</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('admin')}
-                className="text-amber-400 hover:text-amber-300 font-semibold transition-colors flex items-center gap-1.5"
-              >
-                <ShieldCheck className="w-3.5 h-3.5" />
-                <span>Admin Management Panel</span>
               </button>
             </div>
           </div>
