@@ -55,7 +55,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [language, setLanguage] = useState<Language>('en');
 
   const adminName = 'Chief Operator (UK)';
-  const activeCoin = coins.find((c: any) => c.symbol === selectedSymbol) || coins[0];
+  const activeCoin = coins.find((c: any) => c.symbol === selectedSymbol) || coins;
   const currentUser = users.find((u: any) => u.id === currentUserId) || { id: '', name: 'Guest', email: '', role: 'user', uid: '000000', balances: { funding: 0, trading: 0 }, status: 'active' };
   const isSuperAdmin = currentUser.role === 'superadmin';
 
@@ -84,7 +84,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     fetchAllTradingData();
     const syncInterval = setInterval(fetchAllTradingData, 4000);
     return () => clearInterval(syncInterval);
-  }, [currentUserId]);
+  }, []);
 
   const sendUserMessage = async (text: string) => {
     if (!text.trim()) return;
