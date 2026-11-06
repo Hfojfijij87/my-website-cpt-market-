@@ -20,7 +20,6 @@ import {
   initialSystemSettings,
 } from '../data/initialData';
 
-// ১. সুপাবেস ক্লায়েন্ট ইনিশিয়ালাইজেশন
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
@@ -33,10 +32,10 @@ interface AppContextType {
   isUserLoggedIn: boolean;
   isSuperAdmin: boolean;
   loginUser: (identifier: string, password?: string) => { success: boolean; message: string };
-  registerUser: (params: { name: string; email: string; phone?: string; password?: string; referralCode: string }) => { success: boolean; message: string; user?: User };
+  registerUser: (params: { name: string; email: string; referralCode: string }) => { success: boolean; message: string; user?: User };
   logoutUser: () => void;
   activeTab: string;
-  setActiveTab: (tab: any) => void;
+  setActiveTab: (tab: string) => void;
   isSupportOpen: boolean;
   setIsSupportOpen: (open: boolean) => void;
   isDepositModalOpen: boolean;
@@ -45,51 +44,51 @@ interface AppContextType {
   setIsWithdrawModalOpen: (open: boolean) => void;
   isTransferModalOpen: boolean;
   setIsTransferModalOpen: (open: boolean) => void;
-  transferFunds: (params: { fromWallet: 'funding' | 'trading'; toWallet: 'funding' | 'trading'; amount: number }) => { success: boolean; message: string };
+  transferFunds: () => { success: boolean; message: string };
   selectedTradeDetails: Trade | null;
   setSelectedTradeDetails: (trade: Trade | null) => void;
   coins: MarketCoin[];
   selectedSymbol: string;
   setSelectedSymbol: (symbol: string) => void;
   activeCoin: MarketCoin;
-  updateCoinSettings: (symbol: string, updates: Partial<MarketCoin>) => void;
-  setCoinPrice: (symbol: string, newPrice: number) => void;
-  applyMarketShock: (symbol: string, percentage: number) => void;
-  addCustomCoin: (newCoin: MarketCoin) => void;
-  marketDataMode: 'live_stream' | 'manual_benchmark';
-  setMarketDataMode: (mode: 'live_stream' | 'manual_benchmark') => void;
+  updateCoinSettings: () => void;
+  setCoinPrice: () => void;
+  applyMarketShock: () => void;
+  addCustomCoin: () => void;
+  marketDataMode: string;
+  setMarketDataMode: (mode: any) => void;
   trades: Trade[];
-  openTrade: (params: { symbol: string; type: TradeType; leverage: number; margin: number; durationMinutes: number }) => { success: boolean; message: string };
-  closeTrade: (tradeId: string) => void;
+  openTrade: (params: any) => { success: boolean; message: string };
+  closeTrade: () => void;
   supportTickets: SupportTicket[];
-  activeSupportUsers: any[];
-  setUserViewingSupport: (userId: string, isViewing: boolean) => void;
+  activeSupportUsers: any;
+  setUserViewingSupport: () => void;
   sendUserMessage: (text: string) => void;
   sendAdminReply: (ticketId: string, text: string) => void;
-  updateTicketStatus: (ticketId: string, status: TicketStatus) => void;
-  closeSupportSession: (ticketId: string) => void;
-  reopenSupportSession: (ticketId: string) => void;
-  startNewSupportChat: (userId?: string) => void;
-  deleteSupportTicket: (ticketId: string) => void;
+  updateTicketStatus: () => void;
+  closeSupportSession: () => void;
+  reopenSupportSession: () => void;
+  startNewSupportChat: () => void;
+  deleteSupportTicket: () => void;
   markUserChatAsRead: () => void;
   language: Language;
   setLanguage: (lang: Language) => void;
   balanceAdjustments: BalanceAdjustment[];
-  adjustUserBalance: (params: { userId: string; amount: number; type: BalanceAdjustmentType; reason: string; wallet?: 'trading' | 'funding' }) => void;
+  adjustUserBalance: (params: any) => void;
   depositRequests: DepositRequest[];
-  submitDepositRequest: (params: { amount: number; txid: string; paymentMethod: string; network?: string; note?: string }) => void;
-  approveDeposit: (depositId: string) => void;
-  rejectDeposit: (depositId: string, note?: string) => void;
+  submitDepositRequest: (params: any) => void;
+  approveDeposit: (id: string) => void;
+  rejectDeposit: (id: string) => void;
   withdrawalRequests: WithdrawalRequest[];
-  submitWithdrawalRequest: (params: { amount: number; accountHolderName: string; bankOrAddress: string; network: string; withdrawalType?: 'USD' | 'USDT'; notes?: string }) => { success: boolean; message: string };
-  approveWithdrawal: (withdrawalId: string) => void;
-  rejectWithdrawal: (withdrawalId: string, reason: string) => void;
+  submitWithdrawalRequest: () => { success: boolean; message: string };
+  approveWithdrawal: (id: string) => void;
+  rejectWithdrawal: (id: string) => void;
   isAdmin: boolean;
   setIsAdmin: (isAdmin: boolean) => void;
   adminName: string;
   auditLogs: AuditLog[];
   systemSettings: SystemSettings;
-  updateSystemSettings: (settings: Partial<SystemSettings>) => void;
+  updateSystemSettings: (settings: any) => void;
   resetAllData: () => void;
 }
 
@@ -117,6 +116,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [selectedTradeDetails, setSelectedTradeDetails] = useState<Trade | null>(null);
   const [marketDataMode, setMarketDataMode] = useState<'live_stream' | 'manual_benchmark'>('live_stream');
+  const [activeSupportUsers] = useState([]);
   const [language, setLanguage] = useState<Language>('en');
 
   const adminName = 'Chief Operator (UK)';
@@ -124,21 +124,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const currentUser = users.find((u) => u.id === currentUserId) || { id: '', name: 'Guest', email: '', role: 'user', uid: '000000', balances: { funding: 0, trading: 0 }, status: 'active' };
   const isSuperAdmin = currentUser.role === 'superadmin';
 
-  // 🔄 ক্লাউড ডাটাবেজ (Supabase) থেকে সব ফিচার রিয়েল-টাইমে সিঙ্ক করার অটো-লুপ
   useEffect(() => {
     const fetchAllTradingData = async () => {
       // ১. লাইভ কাস্টমার সাপোর্ট মেসেজ লোড
       const { data: cloudTickets } = await supabase.from('support_tickets').select('*').order('created_at', { ascending: false });
       if (cloudTickets) {
         setSupportTickets(cloudTickets.map((t: any) => ({
-          id: t.id,
-          userId: t.user_id || 'guest',
-          userName: 'Live Client',
-          userUid: '100002',
-          subject: 'Live Desk Trade Query',
-          status: t.status as TicketStatus,
-          createdAt: t.created_at,
-          updatedAt: t.created_at,
+          id: t.id, userId: t.user_id || 'guest', userName: 'Live Client', userUid: '100002', subject: 'Live Desk Trade Query', status: t.status as TicketStatus, createdAt: t.created_at, updatedAt: t.created_at,
           messages: [{ id: 'msg-' + t.id, sender: 'user', text: t.message, timestamp: t.created_at, read: false }]
         })));
       }
@@ -147,17 +139,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const { data: cloudTrades } = await supabase.from('trades').select('*').order('created_at', { ascending: false });
       if (cloudTrades) {
         setTrades(cloudTrades.map((tr: any) => ({
-          id: tr.id,
-          userId: tr.user_id,
-          symbol: tr.symbol,
-          type: tr.type as TradeType,
-          leverage: tr.leverage,
-          margin: tr.margin,
-          openPrice: tr.open_price,
-          closePrice: tr.close_price,
-          status: tr.status,
-          pnl: tr.pnl,
-          createdAt: tr.created_at
+          id: tr.id, userId: tr.user_id, symbol: tr.symbol, type: tr.type as TradeType, leverage: tr.leverage, margin: tr.margin, openPrice: tr.open_price, closePrice: tr.close_price, status: tr.status, pnl: tr.pnl, createdAt: tr.created_at
         })));
       }
 
@@ -165,23 +147,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const { data: cloudProfiles } = await supabase.from('profiles').select('*');
       if (cloudProfiles) {
         setUsers(cloudProfiles.map((p: any) => ({
-          id: p.id,
-          uid: p.uid.toString(),
-          name: p.full_name,
-          email: p.email,
-          role: p.role,
-          balances: { funding: p.funding_balance || 0, trading: p.trading_balance || 0 },
-          status: p.status || 'active'
+          id: p.id, uid: p.uid.toString(), name: p.full_name, email: p.email, role: p.role, balances: { funding: p.funding_balance || 0, trading: p.trading_balance || 0 }, status: p.status || 'active'
         })));
       }
     };
 
     fetchAllTradingData();
-    const syncInterval = setInterval(fetchAllTradingData, 4000); // প্রতি ৪ সেকেন্ড পর পর রিয়েল-টাইম রিফ্রেশ
+    const syncInterval = setInterval(fetchAllTradingData, 4000);
     return () => clearInterval(syncInterval);
   }, []);
 
-  // ✉️ কাস্টমার মেসেজ ও অ্যাকশন মেকানিজম সরাসরি ব্যাকএন্ডে পুশ করার ফাংশন
   const sendUserMessage = async (text: string) => {
     if (!text.trim()) return;
     await supabase.from('support_tickets').insert([{ user_id: currentUserId || null, message: text, status: 'pending' }]);
@@ -192,7 +167,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const openTrade = (params: any) => {
-    // ডাটাবেজে লাইভ অর্ডার এক্সিকিউট করা
     supabase.from('trades').insert([{ user_id: currentUserId, symbol: params.symbol, type: params.type, leverage: params.leverage, margin: params.margin, status: 'OPEN' }]);
     return { success: true, message: 'Trade successfully tracked on Admin Panel' };
   };
@@ -203,6 +177,31 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const loginUser = (id: string) => { setCurrentUserId(id); setIsUserLoggedIn(true); return { success: true, message: 'OK' }; };
   const registerUser = () => ({ success: true, message: 'Registered' });
 
-  // ফালতু ডেমো মেথড ক্লিনিং
   const transferFunds = () => ({ success: true, message: 'Success' });
   const updateCoinSettings = () => {};
+  const setCoinPrice = () => {};
+  const applyMarketShock = () => {};
+  const addCustomCoin = () => {};
+  const closeTrade = () => {};
+  const setUserViewingSupport = () => {};
+  const updateTicketStatus = () => {};
+  const closeSupportSession = () => {};
+  const reopenSupportSession = () => {};
+  const startNewSupportChat = () => {};
+  const deleteSupportTicket = () => {};
+  const markUserChatAsRead = () => {};
+  const adjustUserBalance = () => {};
+  const submitDepositRequest = () => {};
+  const approveDeposit = () => {};
+  const rejectDeposit = () => {};
+  const submitWithdrawalRequest = () => ({ success: true, message: 'Success' });
+  const approveWithdrawal = () => {};
+  const rejectWithdrawal = () => {};
+  const updateSystemSettings = () => {};
+  const resetAllData = () => {};
+
+  return (
+    <AppContext.Provider value={{
+      users, currentUser, switchUser, updateUserStatus, isUserLoggedIn, isSuperAdmin, loginUser, registerUser, logoutUser,
+      activeTab, setActiveTab, isSupportOpen, setIsSupportOpen, isDepositModalOpen, setIsDepositModalOpen, isWithdrawModalOpen, setIsWithdrawModalOpen, isTransferModalOpen, setIsTransferModalOpen, transferFunds, selectedTradeDetails, setSelectedTradeDetails,
+      coins, selectedSymbol, setSelectedSymbol, activeCoin, updateCoinSettings, setCoinPrice, applyMarketShock, addCustomCoin, marketDataMode, setMarketDataMode, trades, openTrade, closeTrade,
