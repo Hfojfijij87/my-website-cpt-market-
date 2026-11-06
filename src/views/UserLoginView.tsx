@@ -18,7 +18,7 @@ import {
 import { CptLogo } from '../components/CptLogo';
 
 export const UserLoginView: React.FC = () => {
-  const { loginUser, registerUser, validateReferralCode, setActiveTab, setIsSupportOpen } = useApp();
+  const { loginUser, registerUser, setActiveTab, setIsAdmin, setIsSupportOpen, users } = useApp();
 
   const [mode, setMode] = useState<'signin' | 'register'>('signin');
 
@@ -48,38 +48,25 @@ export const UserLoginView: React.FC = () => {
     }
   }, []);
 
-  // Referral codes are looked up through a restricted Supabase RPC, not a client-side user list.
-  const [matchedInviter, setMatchedInviter] = useState<{ uid: string; name: string } | null>(null);
-  const [checkingReferral, setCheckingReferral] = useState(false);
-  useEffect(() => {
-    let active = true;
-    const code = regReferralCode.trim();
-    if (!code) { setMatchedInviter(null); setCheckingReferral(false); return; }
-    setCheckingReferral(true);
-    validateReferralCode(code).then((result) => {
-      if (!active) return;
-      setMatchedInviter(result.valid && result.uid ? { uid: result.uid, name: result.name || 'Trader' } : null);
-      setCheckingReferral(false);
-    }).catch(() => {
-      if (active) { setMatchedInviter(null); setCheckingReferral(false); }
-    });
-    return () => { active = false; };
-  }, [regReferralCode]);
+  // Check matching inviter in real time
+  const matchedInviter = regReferralCode.trim()
+    ? users.find((u) => u.uid === regReferralCode.trim())
+    : null;
 
   // Feedback messages
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
-  const handleSignInSubmit = async (e: React.FormEvent) => {
+  const handleSignInSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setFeedback(null);
 
-    const res = await loginUser(loginIdentifier, loginPassword);
+    const res = loginUser(loginIdentifier, loginPassword);
     if (!res.success) {
       setFeedback({ type: 'error', message: res.message });
     }
   };
 
-  const handleRegisterSubmit = async (e: React.FormEvent) => {
+  const handleRegisterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setFeedback(null);
 
@@ -97,13 +84,15 @@ export const UserLoginView: React.FC = () => {
       return;
     }
 
-    const referralCheck = await validateReferralCode(trimmedRef);
-    if (!referralCheck.valid) {
-      setFeedback({ type: 'error', message: referralCheck.message || 'Invalid Referral Code. Please enter a valid inviter UID.' });
+    if (!matchedInviter) {
+      setFeedback({
+        type: 'error',
+        message: 'Invalid Referral Code. Please enter a valid inviter UID.',
+      });
       return;
     }
 
-    const res = await registerUser({
+    const res = registerUser({
       name: regName,
       email: regEmail,
       phone: regPhone,
@@ -113,14 +102,6 @@ export const UserLoginView: React.FC = () => {
 
     if (!res.success) {
       setFeedback({ type: 'error', message: res.message });
-    } else {
-      setFeedback({ type: 'success', message: res.message });
-      setMode('signin');
-      setLoginIdentifier(regEmail.trim().toLowerCase());
-      setLoginPassword('');
-      setRegPassword('');
-      setRegConfirmPassword('');
-      if (typeof window !== 'undefined') window.history.replaceState({}, document.title, window.location.pathname);
     }
   };
 
@@ -159,10 +140,10 @@ export const UserLoginView: React.FC = () => {
         {/* MODE 1: SIGN IN (Matches Screenshot exactly) */}
         {mode === 'signin' && (
           <form onSubmit={handleSignInSubmit} className="space-y-4 text-left text-xs">
-            {/* Email Address */}
+            {/* Username / Email */}
             <div className="space-y-1.5">
               <label className="text-slate-300 font-semibold block text-[13px]">
-                Email Address
+                Username / Email
               </label>
               <div className="relative">
                 <UserIcon className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -171,7 +152,7 @@ export const UserLoginView: React.FC = () => {
                   required
                   value={loginIdentifier}
                   onChange={(e) => setLoginIdentifier(e.target.value)}
-                  placeholder="Email Address"
+                  placeholder="Username / Email"
                   className="w-full bg-[#0c1426]/90 border border-[#1e2f52] focus:border-amber-400 text-white rounded-xl pl-10 pr-4 py-3 outline-none transition-all placeholder:text-slate-500 text-xs shadow-inner"
                 />
               </div>
@@ -303,7 +284,7 @@ export const UserLoginView: React.FC = () => {
                     required
                     value={regPassword}
                     onChange={(e) => setRegPassword(e.target.value)}
-                    placeholder="Min. 8 chars"
+                    placeholder="Min. 6 chars"
                     className="w-full bg-[#0c1426]/90 border border-[#1e2f52] focus:border-amber-400 text-white rounded-xl px-3 py-2.5 outline-none text-xs font-mono"
                   />
                 </div>
@@ -352,13 +333,11 @@ export const UserLoginView: React.FC = () => {
               {/* Dynamic Inviter Verification Feedback */}
               {regReferralCode.trim() && (
                 <div className="pt-1">
-                  {checkingReferral ? (
-                    <div className="text-[11px] text-slate-400">Checking referral code…</div>
-                  ) : matchedInviter ? (
+                  {matchedInviter ? (
                     <div className="flex items-center gap-1.5 text-[11px] text-emerald-400 font-medium bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20">
                       <CheckCircle2 className="w-3.5 h-3.5 shrink-0 text-emerald-400" />
                       <span>
-                        Verified Inviter: <strong className="text-white">{matchedInviter.name}</strong> · UID <strong className="text-white font-mono">{matchedInviter.uid}</strong>
+                        Verified Inviter Code: <strong className="text-white font-mono">UID {matchedInviter.uid}</strong>
                       </span>
                     </div>
                   ) : (

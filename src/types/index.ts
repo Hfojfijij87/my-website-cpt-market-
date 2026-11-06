@@ -15,6 +15,7 @@ export interface User {
   lastLogin: string;
   referredByUid?: string;
   role?: 'user' | 'admin' | 'superadmin';
+  password?: string;
 }
 
 export type TradeType = 'BUY' | 'SELL';

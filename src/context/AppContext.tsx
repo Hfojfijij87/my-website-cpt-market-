@@ -15,8 +15,8 @@ import {
   SystemSettings,
   Language,
 } from '../types';
-import { supabase } from '../lib/supabase';
 import {
+  initialUsers,
   initialCoins,
   initialTrades,
   initialSupportTickets,
@@ -35,16 +35,15 @@ interface AppContextType {
   updateUserStatus: (userId: string, status: 'active' | 'suspended') => void;
   isUserLoggedIn: boolean;
   isSuperAdmin: boolean;
-  validateReferralCode: (code: string) => Promise<{ valid: boolean; uid?: string; name?: string; message?: string }>;
-  loginUser: (identifier: string, password?: string) => Promise<{ success: boolean; message: string }>; 
+  loginUser: (identifier: string, password?: string) => { success: boolean; message: string };
   registerUser: (params: {
     name: string;
     email: string;
     phone?: string;
     password?: string;
     referralCode: string;
-  }) => Promise<{ success: boolean; message: string; user?: User }>;
-  logoutUser: () => Promise<void>;
+  }) => { success: boolean; message: string; user?: User };
+  logoutUser: () => void;
 
   // Navigation
   activeTab: 'home' | 'market' | 'trade' | 'history' | 'account' | 'admin' | 'login';
@@ -147,6 +146,8 @@ interface AppContextType {
   rejectWithdrawal: (withdrawalId: string, reason: string) => void;
 
   // Admin & System
+  isAdmin: boolean;
+  setIsAdmin: (isAdmin: boolean) => void;
   adminName: string;
   auditLogs: AuditLog[];
   systemSettings: SystemSettings;
@@ -167,9 +168,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  // User profiles come from Supabase. Never hydrate identities from localStorage/demo data.
-  const [users, setUsers] = useState<User[]>([]);
-  const [currentUserId, setCurrentUserId] = useState<string>('');
+  const [users, setUsers] = useState<User[]>(() => loadState('users', initialUsers));
+  const [currentUserId, setCurrentUserId] = useState<string>(() => loadState('currentUserId', 'user-827592'));
   const [coins, setCoins] = useState<MarketCoin[]>(() => loadState('coins', initialCoins));
   const [selectedSymbol, setSelectedSymbol] = useState<string>('BTC');
   const [trades, setTrades] = useState<Trade[]>(() => loadState('trades', initialTrades));
@@ -198,33 +198,46 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return 'home';
   });
 
-  const [isSuperAdmin, setIsSuperAdmin] = useState<boolean>(false);
-  const [isUserLoggedIn, setIsUserLoggedIn] = useState<boolean>(false);
+  const [isAdmin, setIsAdmin] = useState<boolean>(() => loadState('isAdmin', false));
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState<boolean>(() => loadState('isUserLoggedIn', true));
   const adminName = 'Chief Operator (UK)';
 
-  // Direct /admin URLs select the Admin view, but do not grant permission.
+  // Automatically listen to /admin, #admin and ?tab=admin URL navigation
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const handleAdminUrl = () => {
-      const path = window.location.pathname.toLowerCase();
-      const hash = window.location.hash.toLowerCase();
-      const params = new URLSearchParams(window.location.search);
-      if (path.endsWith('/admin') || hash === '#admin' || params.get('tab') === 'admin' || params.get('admin') === 'true') {
-        setActiveTab('admin');
-      }
-    };
-    handleAdminUrl();
-    window.addEventListener('hashchange', handleAdminUrl);
-    window.addEventListener('popstate', handleAdminUrl);
-    return () => {
-      window.removeEventListener('hashchange', handleAdminUrl);
-      window.removeEventListener('popstate', handleAdminUrl);
-    };
-  }, []);
+    if (typeof window !== 'undefined') {
+      const handleAdminUrl = () => {
+        const path = window.location.pathname.toLowerCase();
+        const hash = window.location.hash.toLowerCase();
+        const params = new URLSearchParams(window.location.search);
+        if (
+          path.endsWith('/admin') ||
+          hash === '#admin' ||
+          params.get('tab') === 'admin' ||
+          params.get('admin') === 'true'
+        ) {
+          const superAdminUser = users.find((u) => u.role === 'superadmin' || u.uid === '100001');
+          if (superAdminUser) {
+            setCurrentUserId(superAdminUser.id);
+          }
+          setIsAdmin(true);
+          setActiveTab('admin');
+        }
+      };
+      handleAdminUrl();
+      window.addEventListener('hashchange', handleAdminUrl);
+      window.addEventListener('popstate', handleAdminUrl);
+      return () => {
+        window.removeEventListener('hashchange', handleAdminUrl);
+        window.removeEventListener('popstate', handleAdminUrl);
+      };
+    }
+  }, [users]);
 
   const [isSupportOpen, setIsSupportOpen] = useState(false);
   const [activeSupportUsers, setActiveSupportUsers] = useState<{ userId: string; userName: string; uid: string; enteredAt: string }[]>(() =>
-    []
+    loadState('activeSupportUsers', [
+      { userId: 'user-518294', userName: 'Alex Trader', uid: '518294', enteredAt: 'Live Now' }
+    ])
   );
   const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
@@ -236,6 +249,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [activeSupportUsers]);
 
   // Sync to localStorage
+  useEffect(() => {
+    localStorage.setItem('cpt_users', JSON.stringify(users));
+  }, [users]);
+
+  useEffect(() => {
+    localStorage.setItem('cpt_currentUserId', JSON.stringify(currentUserId));
+  }, [currentUserId]);
+
   useEffect(() => {
     localStorage.setItem('cpt_coins', JSON.stringify(coins));
   }, [coins]);
@@ -268,6 +289,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     localStorage.setItem('cpt_settings', JSON.stringify(systemSettings));
   }, [systemSettings]);
 
+  useEffect(() => {
+    localStorage.setItem('cpt_isAdmin', JSON.stringify(isAdmin));
+  }, [isAdmin]);
+
+  useEffect(() => {
+    localStorage.setItem('cpt_isUserLoggedIn', JSON.stringify(isUserLoggedIn));
+  }, [isUserLoggedIn]);
+
   const [language, setLanguage] = useState<Language>(() => loadState('language', 'en'));
 
   useEffect(() => {
@@ -282,91 +311,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     localStorage.setItem('cpt_marketDataMode', JSON.stringify(marketDataMode));
   }, [marketDataMode]);
 
-  const mapProfile = (row: any): User => ({
-    id: row.id,
-    uid: String(row.uid),
-    name: row.full_name || 'Trader',
-    email: row.email || '',
-    phone: row.phone || undefined,
-    tradingBalance: Number(row.trading_balance || 0),
-    fundingBalance: Number(row.funding_balance || 0),
-    status: row.status === 'suspended' ? 'suspended' : 'active',
-    isOnline: row.id === currentUserId,
-    role: row.role === 'superadmin' ? 'superadmin' : row.role === 'admin' ? 'admin' : 'user',
-    referredByUid: row.referred_by_uid || undefined,
-    createdAt: row.created_at ? new Date(row.created_at).toISOString() : new Date().toISOString(),
-    lastLogin: row.last_login ? new Date(row.last_login).toISOString() : '',
-    avatar: undefined,
-  });
-
-  const loadAuthenticatedProfiles = async (authUserId: string): Promise<User | null> => {
-    if (!supabase) return null;
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('id, uid, full_name, email, phone, trading_balance, funding_balance, status, role, referred_by_uid, created_at, last_login')
-      .order('created_at', { ascending: false });
-    if (error) throw error;
-    const mapped = (data || []).map(mapProfile);
-    const signedInProfile = mapped.find((u) => u.id === authUserId) || null;
-    if (!signedInProfile) throw new Error('Your account profile is not ready. Please contact support or run the Supabase setup SQL.');
-    if (signedInProfile.status === 'suspended') throw new Error('This account has been suspended by the administrator.');
-    setUsers(mapped);
-    setCurrentUserId(authUserId);
-    setIsUserLoggedIn(true);
-    const superAdmin = signedInProfile.role === 'superadmin' && signedInProfile.status === 'active';
-    setIsSuperAdmin(superAdmin);
-    return signedInProfile;
-  };
-
-  // Keep app authentication tied to Supabase Auth, not localStorage flags.
-  useEffect(() => {
-    if (!supabase) return;
-    let active = true;
-    const applySession = async (session: any) => {
-      if (!active) return;
-      if (!session?.user) {
-        setUsers([]);
-        setCurrentUserId('');
-        setIsUserLoggedIn(false);
-        setIsSuperAdmin(false);
-        return;
-      }
-      try {
-        await loadAuthenticatedProfiles(session.user.id);
-      } catch (error) {
-        console.error('Unable to load Supabase profile:', error);
-        if (active) void supabase.auth.signOut();
-        if (active) {
-          setUsers([]);
-          setCurrentUserId('');
-          setIsUserLoggedIn(false);
-          setIsSuperAdmin(false);
-          }
-      }
-    };
-    supabase.auth.getSession().then(({ data }) => applySession(data.session));
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-      // Defer the profile query until Supabase finishes its auth-state callback.
-      setTimeout(() => { void applySession(session); }, 0);
-    });
-    // Discard obsolete local demo identities and old client-side admin flags.
-    localStorage.removeItem('cpt_users');
-    localStorage.removeItem('cpt_currentUserId');
-    localStorage.removeItem('cpt_activeSupportUsers');
-    localStorage.removeItem('cpt_isAdmin');
-    localStorage.removeItem('cpt_isUserLoggedIn');
-    sessionStorage.removeItem('cpt_admin_auth');
-    return () => {
-      active = false;
-      authListener.subscription.unsubscribe();
-    };
-  }, []);
-
-  const guestUser: User = {
-    id: '', uid: '—', name: 'Guest', email: '', tradingBalance: 0, fundingBalance: 0,
-    status: 'active', isOnline: false, role: 'user', createdAt: '', lastLogin: '',
-  };
-  const currentUser = users.find((u) => u.id === currentUserId) || guestUser;
+  const currentUser = users.find((u) => u.id === currentUserId) || users[0];
+  const isSuperAdmin =
+    currentUser.role === 'superadmin' ||
+    currentUser.email === 'ripuworkshop@gmail.com' ||
+    currentUser.uid === '100001';
   const activeCoin = coins.find((c) => c.symbol === selectedSymbol) || coins[0];
 
   // Live Price Ticker & Trade PnL Updater
@@ -482,23 +431,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [coins]);
 
   const switchUser = (userId: string) => {
-    // This is an admin-only preview selector; it never changes the Supabase identity.
-    if (!isSuperAdmin) return;
     const user = users.find((u) => u.id === userId);
-    if (user) setCurrentUserId(userId);
+    if (user) {
+      setCurrentUserId(userId);
+      setIsUserLoggedIn(true);
+    }
   };
 
-  const validateReferralCode = async (code: string) => {
-    const cleanCode = (code || '').trim();
-    if (!cleanCode) return { valid: false, message: 'Referral Code is required.' };
-    if (!supabase) return { valid: false, message: 'Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in Vercel.' };
-    const { data, error } = await supabase.rpc('lookup_referral_code', { p_code: cleanCode });
-    if (error) return { valid: false, message: error.message };
-    const match = Array.isArray(data) ? data[0] : data;
-    return match ? { valid: true, uid: String(match.uid), name: String(match.full_name || 'Trader') } : { valid: false, message: 'Invalid Referral Code. No registered account was found.' };
-  };
-
-  const registerUser = async ({
+  const registerUser = ({
     name,
     email,
     phone,
@@ -514,84 +454,140 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const cleanEmail = email.trim().toLowerCase();
     const cleanName = name.trim();
     const cleanRef = (referralCode || '').trim();
-    if (!supabase) return { success: false, message: 'Supabase is not configured. Add the two VITE_SUPABASE variables in Vercel.' };
-    if (!cleanName) return { success: false, message: 'Please enter your full name.' };
-    if (!cleanEmail || !cleanEmail.includes('@')) return { success: false, message: 'Please enter a valid email address.' };
-    if (!password || password.length < 8) return { success: false, message: 'Password must contain at least 8 characters.' };
-    if (!cleanRef) return { success: false, message: 'Referral Code is required to register.' };
 
-    const validation = await validateReferralCode(cleanRef);
-    if (!validation.valid) return { success: false, message: validation.message || 'Invalid Referral Code.' };
+    if (!cleanName) {
+      return { success: false, message: 'Please enter your username.' };
+    }
+    if (!cleanEmail || !cleanEmail.includes('@')) {
+      return { success: false, message: 'Please enter a valid email address.' };
+    }
 
-    const { data, error } = await supabase.auth.signUp({
+    // Rule 1 & 2: Referral code is strictly required and must match an existing user's UID
+    if (!cleanRef) {
+      return {
+        success: false,
+        message: 'A valid Referral Code (Inviter UID) is required to register an account.',
+      };
+    }
+
+    const referrer = users.find((u) => u.uid === cleanRef);
+    if (!referrer) {
+      return {
+        success: false,
+        message: `Invalid Referral Code "${cleanRef}". The inviter account UID does not exist in our registry.`,
+      };
+    }
+
+    const exists = users.some(
+      (u) => u.email.toLowerCase() === cleanEmail || u.name.toLowerCase() === cleanName.toLowerCase()
+    );
+    if (exists) {
+      return { success: false, message: 'This username or email is already registered.' };
+    }
+
+    // Generate random 6-digit UID (ensure it doesn't collide)
+    let uid = Math.floor(100000 + Math.random() * 900000).toString();
+    while (users.some((u) => u.uid === uid)) {
+      uid = Math.floor(100000 + Math.random() * 900000).toString();
+    }
+
+    const newId = `user-${uid}`;
+    const nowStr = new Date().toISOString().replace('T', ' ').substring(0, 19);
+
+    const newUser: User = {
+      id: newId,
+      uid,
+      name: cleanName,
       email: cleanEmail,
-      password,
-      options: {
-        data: {
-          full_name: cleanName,
-          phone: phone?.trim() || null,
-          referral_code: cleanRef,
-        },
-        emailRedirectTo: typeof window !== 'undefined' ? `${window.location.origin}/` : undefined,
-      },
-    });
-    if (error) return { success: false, message: error.message };
+      phone: phone || '+44 7900 000000',
+      tradingBalance: 0.00, // 0.00 initial balance as requested, only added by admin deposit
+      fundingBalance: 0.00,
+      status: 'active',
+      isOnline: true,
+      referredByUid: referrer.uid,
+      role: 'user',
+      password: password || 'default123',
+      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
+      createdAt: nowStr,
+      lastLogin: nowStr,
+    };
 
-    // Always return the new member to the normal Sign In screen. The profile and
-    // referral link are created atomically by the database trigger.
-    if (data.session) await supabase.auth.signOut();
-    setUsers([]);
-    setCurrentUserId('');
-    setIsUserLoggedIn(false);
-    setIsSuperAdmin(false);
-    setActiveTab('login');
+    setUsers((prev) => [newUser, ...prev]);
+    setCurrentUserId(newId);
+    setIsUserLoggedIn(true);
+    setActiveTab('home');
+
+    // Automatically create a support welcome ticket for this new trader
+    const welcomeTicket: SupportTicket = {
+      id: `ticket-${Date.now()}`,
+      userId: newId,
+      userName: newUser.name,
+      userEmail: newUser.email,
+      status: 'answered',
+      lastMessage: 'Welcome to CPT Markets UK! Our 24/7 Official Support Desk is ready to assist you.',
+      lastMessageTime: nowStr,
+      unreadAdminCount: 0,
+      unreadUserCount: 1,
+      messages: [
+        {
+          id: `msg-${Date.now()}`,
+          sender: 'admin',
+          senderName: 'Admin Team (UK)',
+          text: `Welcome to CPT Markets UK, ${newUser.name}!\nYour account UID is ${uid} (Invited by ${referrer.name} — UID: ${referrer.uid}).\nIf you need any assistance with margin trading, verified deposit addresses, or withdrawals, please message us directly here.`,
+          timestamp: nowStr,
+          read: false,
+        },
+      ],
+    };
+    setSupportTickets((prev) => [welcomeTicket, ...prev]);
+
+    logAuditAction(
+      'NEW_USER_REGISTERED_WITH_REFERRAL',
+      `${newUser.name} (${uid})`,
+      `New trader account created via Referral UID: ${referrer.uid} (${referrer.name})`
+    );
+
     return {
       success: true,
-      message: data.session
-        ? 'Account created successfully. Please sign in with your email and password.'
-        : 'Registration started. Check your email to confirm the account, then sign in.',
+      message: `Account created successfully! Welcome UID: ${uid} (Invited by ${referrer.name})`,
+      user: newUser,
     };
   };
 
-  const loginUser = async (identifier: string, password?: string) => {
-    if (!supabase) return { success: false, message: 'Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in Vercel.' };
-    const clean = identifier.trim();
-    if (!clean || !password) return { success: false, message: 'Enter your email address and password.' };
-    if (!clean.includes('@')) return { success: false, message: 'Please sign in with the email address used during registration.' };
-    const { data, error } = await supabase.auth.signInWithPassword({ email: clean.toLowerCase(), password });
-    if (error || !data.user) return { success: false, message: error?.message || 'Unable to sign in.' };
-    try {
-      const profile = await loadAuthenticatedProfiles(data.user.id);
-      if (!profile) throw new Error('Account profile not found.');
-      await supabase.rpc('mark_my_last_login');
+  const loginUser = (identifier: string, _password?: string) => {
+    const clean = identifier.trim().toLowerCase();
+    const found = users.find(
+      (u) =>
+        u.name.toLowerCase() === clean ||
+        u.email.toLowerCase() === clean ||
+        u.uid === clean
+    );
+
+    if (found) {
+      if (found.status === 'suspended') {
+        return { success: false, message: 'This account has been suspended by the administrator.' };
+      }
+      setCurrentUserId(found.id);
+      setIsUserLoggedIn(true);
       setActiveTab('home');
-      return { success: true, message: `Welcome back, ${profile.name}!` };
-    } catch (error: any) {
-      await supabase.auth.signOut();
-      return { success: false, message: error?.message || 'Could not load your account profile.' };
+      return { success: true, message: `Welcome back, ${found.name}!` };
     }
+
+    return {
+      success: false,
+      message: 'Account not found. Please verify your username/email or click Create Account.',
+    };
   };
 
-  const logoutUser = async () => {
-    if (supabase) await supabase.auth.signOut();
-    setUsers([]);
-    setCurrentUserId('');
+  const logoutUser = () => {
     setIsUserLoggedIn(false);
-    setIsSuperAdmin(false);
     setActiveTab('login');
   };
 
   const updateUserStatus = (userId: string, status: 'active' | 'suspended') => {
-    if (!isSuperAdmin || !supabase) return;
-    void supabase.rpc('admin_update_profile', {
-      p_user_id: userId,
-      p_trading_balance: null,
-      p_funding_balance: null,
-      p_status: status,
-    }).then(({ error }) => {
-      if (error) console.error('Admin status update failed:', error.message);
-    });
-    setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, status } : u)));
+    setUsers((prev) =>
+      prev.map((u) => (u.id === userId ? { ...u, status } : u))
+    );
     const targetUser = users.find((u) => u.id === userId);
     logAuditAction(
       status === 'suspended' ? 'USER_SUSPENDED' : 'USER_ACTIVATED',
@@ -1084,20 +1080,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const previousBalance = isFunding ? targetUser.fundingBalance : targetUser.tradingBalance;
     const newBalance = Number(Math.max(0, previousBalance + amount).toFixed(2));
 
-    if (isSuperAdmin && supabase) {
-      void supabase.rpc('admin_update_profile', {
-        p_user_id: userId,
-        p_trading_balance: isFunding ? null : newBalance,
-        p_funding_balance: isFunding ? newBalance : null,
-        p_status: null,
-      }).then(({ error }) => {
-        if (error) console.error('Admin balance update failed:', error.message);
-      });
-    }
-    setUsers((prev) => prev.map((u) => {
-      if (u.id !== userId) return u;
-      return isFunding ? { ...u, fundingBalance: newBalance } : { ...u, tradingBalance: newBalance };
-    }));
+    setUsers((prev) =>
+      prev.map((u) => {
+        if (u.id !== userId) return u;
+        return isFunding ? { ...u, fundingBalance: newBalance } : { ...u, tradingBalance: newBalance };
+      })
+    );
 
     const adjustment: BalanceAdjustment = {
       id: `adj-${Date.now()}`,
@@ -1408,12 +1396,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const resetAllData = () => {
-    if (supabase) void supabase.auth.signOut();
-    Object.keys(localStorage).filter((key) => key.startsWith('cpt_')).forEach((key) => localStorage.removeItem(key));
-    setUsers([]);
-    setCurrentUserId('');
-    setIsUserLoggedIn(false);
-    setIsSuperAdmin(false);
+    localStorage.clear();
+    setUsers(initialUsers);
+    setCurrentUserId('user-827592');
     setCoins(initialCoins);
     setTrades(initialTrades);
     setSupportTickets(initialSupportTickets);
@@ -1422,6 +1407,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setWithdrawalRequests(initialWithdrawalRequests);
     setAuditLogs(initialAuditLogs);
     setSystemSettings(initialSystemSettings);
+    setIsAdmin(false);
   };
 
   return (
@@ -1433,7 +1419,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updateUserStatus,
         isUserLoggedIn,
         isSuperAdmin,
-        validateReferralCode,
         loginUser,
         registerUser,
         logoutUser,
@@ -1486,6 +1471,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         submitWithdrawalRequest,
         approveWithdrawal,
         rejectWithdrawal,
+        isAdmin,
+        setIsAdmin,
         adminName,
         auditLogs,
         systemSettings,

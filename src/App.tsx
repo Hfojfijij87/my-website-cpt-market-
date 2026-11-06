@@ -54,7 +54,7 @@ const AppContent: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#0b0e14] text-slate-100 flex flex-col font-sans">
       {/* Top Header */}
-      {isUserLoggedIn && activeTab !== 'login' && activeTab !== 'admin' && <Header />}
+      <Header />
 
       {/* Main Routed Content */}
       <main className="flex-1 pb-24 md:pb-12">

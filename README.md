@@ -1,21 +1,20 @@
-# CPT Market UK
+<div align="center">
+<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
+</div>
 
-React + Vite trading interface with Supabase Auth and database-backed account/referral profiles.
+# Run and deploy your AI Studio app
 
-## Run locally
+This contains everything you need to run your app locally.
 
-1. Install dependencies: `npm install`
-2. Copy `.env.example` to `.env.local`.
-3. Fill `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` with the Supabase project URL and publishable/anon key. Never use a service-role key in the browser.
-4. Run the database SQL in `supabase/schema.sql` after reviewing your existing Supabase schema. Follow `SUPABASE_SETUP.md` to bootstrap the Super Admin and set the Auth password.
-5. Start: `npm run dev`
+View your app in AI Studio: https://ai.studio/apps/92f30683-b430-4107-a83b-3e2e61e2df5d
 
-## Deploy to Vercel
+## Run Locally
 
-Add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in Project Settings → Environment Variables, then redeploy. `vercel.json` includes the SPA rewrite for direct paths such as `/admin`.
+**Prerequisites:**  Node.js
 
-## Security note
 
-Login and registration use Supabase Auth. Referral codes are checked by a database function and re-validated in the `auth.users` insert trigger. Profile access is protected by RLS. Do not add Supabase `service_role` credentials to Vite environment variables or frontend source code.
-
-See `SUPABASE_SETUP.md` for setup and test steps, and `supabase/schema.sql` for the database policies and trigger.
+1. Install dependencies:
+   `npm install`
+2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
+3. Run the app:
+   `npm run dev`

@@ -9,11 +9,15 @@ export const Header: React.FC = () => {
     activeTab,
     setActiveTab,
     currentUser,
+    users,
+    switchUser,
     coins,
     supportTickets,
     depositRequests,
     withdrawalRequests,
     setIsSupportOpen,
+    isAdmin,
+    setIsAdmin,
     isSuperAdmin,
     language,
     setLanguage,
@@ -204,6 +208,7 @@ export const Header: React.FC = () => {
           {isSuperAdmin && (
             <button
               onClick={() => {
+                setIsAdmin(true);
                 setActiveTab('admin');
               }}
               className={`relative flex items-center gap-2 px-3.5 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer ${
