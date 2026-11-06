@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { createClient } from '@supabase/supabase-js';
+export const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL || '', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '');
 import {
   User,
   Trade,
@@ -230,7 +232,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         window.removeEventListener('hashchange', handleAdminUrl);
         window.removeEventListener('popstate', handleAdminUrl);
       };
-    }
+    }   // 🔄 লাইভ ডাটাবেজ সিঙ্ক লুপ
+  useEffect(() => {
+    const syncCloudDatabase = async () => {
+      const { data: cloudTickets } = await supabase.from('support_tickets').select('*').order('created_at', { ascending: false });
+      if (cloudTickets) {
+        setSupportTickets(cloudTickets.map((t: any) => ({
+          id: t.id, userId: t.user_id || 'guest', userName: 'Live Client', userUid: '100002', subject: 'Customer Support Message', status: t.status, createdAt: t.created_at, updatedAt: t.created_at,
+          messages: [{ id: 'msg-' + t.id, sender: 'user', text: t.message, timestamp: t.created_at, read: false }]
+        })));
+      }
+      const { data: cloudProfiles } = await supabase.from('profiles').select('*');
+      if (cloudProfiles) {
+        setUsers(cloudProfiles.map((p: any) => ({
+          id: p.id, uid: p.uid.toString(), name: p.full_name, email: p.email, role: p.role, balances: { funding: p.funding_balance || 0, trading: p.trading_balance || 0 }, status: p.status || 'active'
+        })));
+      }
+    };
+    syncCloudDatabase();
+    const interval = setInterval(syncCloudDatabase, 4000);
+    return () => clearInterval(interval);
+  }, [currentUserId]);
   }, [users]);
 
   const [isSupportOpen, setIsSupportOpen] = useState(false);
@@ -815,6 +837,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       attachmentName: attachment?.name,
       attachmentType: attachment?.type,
     };
+          // ☁️ সরাসরি সুপাবেস ক্লাউড ডাটাবেজে কাস্টমার মেসেজ পুশ করার রিয়েল কানেকশন
+    supabase.from('support_tickets').insert([{ 
+      user_id: currentUserId || null, 
+      message: text, 
+      status: 'pending' 
+    }]).then(({ error }) => {
+      if (error) console.error("Database Save Error:", error.message);
+    });
+
 
     let isFirstUserMessage = false;
 
