@@ -10,29 +10,73 @@ import { AdminWithdrawalsTab } from './admin/AdminWithdrawalsTab';
 import { AdminTradesTab } from './admin/AdminTradesTab';
 import { AdminReportsTab } from './admin/AdminReportsTab';
 import { AdminSettingsTab } from './admin/AdminSettingsTab';
-import { Shield, Eye, EyeOff, LogOut } from 'lucide-react';
+import {
+  LayoutDashboard,
+  Users,
+  MessageSquare,
+  DollarSign,
+  Activity,
+  CreditCard,
+  ArrowUpRight,
+  TrendingUp,
+  FileText,
+  Settings,
+  Shield,
+  Lock,
+  LogOut,
+  ChevronRight,
+  Menu,
+  X,
+  ArrowLeft,
+  Key,
+} from 'lucide-react';
 
 export const AdminPanel: React.FC = () => {
-  const { setActiveTab, adminName, users, switchUser } = useApp();
+  const {
+    setActiveTab,
+    supportTickets,
+    depositRequests,
+    withdrawalRequests,
+    trades,
+    users,
+    adminName,
+    isSuperAdmin,
+    currentUser,
+    switchUser,
+  } = useApp();
+
   const [activeAdminSubTab, setActiveAdminSubTab] = useState<string>('dashboard');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Admin security authentication
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     return sessionStorage.getItem('cpt_admin_auth') === 'true';
   });
-  
-  // ইনপুট ফিল্ডগুলো খালি রাখার জন্য স্টেট
-  const [adminUsername, setAdminUsername] = useState('');
+  const [adminUsername, setAdminUsername] = useState('dashe99228222');
   const [adminPassword, setAdminPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
   const [authError, setAuthError] = useState('');
+
+  // Badges
+  const pendingSupport = supportTickets.reduce((acc, t) => acc + (t.status === 'pending' ? 1 : 0), 0);
+  const pendingDeposits = depositRequests.filter((d) => d.status === 'pending').length;
+  const pendingWithdrawals = withdrawalRequests.filter((w) => w.status === 'pending').length;
+  const activeTradesCount = trades.filter((t) => t.status === 'OPEN').length;
 
   const handleAdminLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // আপনার নির্ধারিত ইউজারনেম এবং পাসওয়ার্ড ভ্যালিডেশন
-    const secureUser = 'dashe99228222';
-    const secureAccessKey = '99228222'; 
+    const cleanUser = adminUsername.trim().toLowerCase();
+    const cleanPass = adminPassword.trim();
 
-    if (adminUsername.trim() === secureUser && adminPassword.trim() === secureAccessKey) {
+    // Verify Admin credentials requested:
+    // Admin User: dashe99228222
+    // Admin Password: 99228222
+    const validUsers = ['dashe99228222', 'dashe99228222@cptmarket.uk', 'ripu', 'ripuworkshop@gmail.com', 'dashe'];
+    const validPasswords = ['99228222', 'ripu2026'];
+
+    const isUserValid = validUsers.includes(cleanUser);
+    const isPassValid = validPasswords.includes(cleanPass);
+
+    if (isUserValid && isPassValid) {
       const superAdminUser = users.find((u) => u.role === 'superadmin' || u.uid === '100001');
       if (superAdminUser) {
         switchUser(superAdminUser.id);
@@ -40,102 +84,299 @@ export const AdminPanel: React.FC = () => {
       setIsAuthenticated(true);
       sessionStorage.setItem('cpt_admin_auth', 'true');
       setAuthError('');
+      if (typeof window !== 'undefined') {
+        window.history.pushState({}, '', '/admin');
+      }
     } else {
-      setAuthError('ভুল ইউজারনেম অথবা পাসওয়ার্ড! আবার চেষ্টা করুন।');
+      setAuthError('Invalid administrator username or password. Access denied.');
     }
   };
 
+  const handleAdminLogout = () => {
+    setIsAuthenticated(false);
+    sessionStorage.removeItem('cpt_admin_auth');
+    setActiveTab('login');
+    if (typeof window !== 'undefined') {
+      window.history.pushState({}, '', '/login');
+    }
+  };
+
+  // If not authenticated, render secure Admin Login screen without bypasses
   if (!isAuthenticated) {
     return (
-      // fixed, inset-0 এবং bg-[#0b0e14] ব্যবহার করে ওপরের সব হেডার ও নেভিগেশন বার সম্পূর্ণ ঢেকে দেওয়া হয়েছে
-      <div className="fixed inset-0 z-50 bg-[#0b0e14] flex items-center justify-center p-4 overflow-y-auto">
-        <div className="bg-[#121622] border border-[#232c40] rounded-2xl w-full max-w-md p-8 shadow-2xl text-center">
+      <div className="min-h-[80vh] flex items-center justify-center p-4">
+        <div className="bg-[#121622] border border-[#232c40] rounded-2xl w-full max-w-md p-8 shadow-2xl relative text-center">
           <div className="w-16 h-16 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30 mx-auto flex items-center justify-center mb-4">
             <Shield className="w-8 h-8" />
           </div>
-          <h2 className="text-xl font-bold text-white tracking-wide">CPT Markets UK — Super Admin Portal</h2>
-          <p className="text-xs text-slate-400 mt-1">Authorized Personnel Only.</p>
-          
+
+          <h2 className="text-xl font-bold text-white tracking-wide">
+            CPT Markets UK — Super Admin Portal
+          </h2>
+          <p className="text-xs text-slate-400 mt-1">
+            Restricted Administrative Access. Authorized Super Administrator only.
+          </p>
+
           <form onSubmit={handleAdminLogin} className="mt-6 space-y-4 text-xs text-left">
             <div>
-              <label className="text-slate-300 font-medium block mb-1">Admin User ID</label>
-              <input 
-                type="text" 
+              <label className="text-slate-300 font-medium block mb-1">Admin Username / Email</label>
+              <input
+                type="text"
                 required
                 value={adminUsername}
                 onChange={(e) => setAdminUsername(e.target.value)}
-                placeholder="Enter Admin Username" 
-                className="w-full bg-[#161c2a] border border-[#242e44] focus:border-amber-400 text-white rounded-xl px-4 py-2.5 outline-none font-semibold" 
+                placeholder="Enter admin username or email"
+                className="w-full bg-[#161c2a] border border-[#242e44] focus:border-amber-400 text-white rounded-xl px-4 py-2.5 outline-none font-mono"
               />
             </div>
+
             <div>
-              <label className="text-slate-300 font-medium block mb-1">Super Admin Password</label>
-              <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  required
-                  value={adminPassword}
-                  onChange={(e) => setAdminPassword(e.target.value)}
-                  placeholder="Enter secure password"
-                  className="w-full bg-[#161c2a] border border-[#242e44] focus:border-amber-400 text-white rounded-xl pl-4 pr-12 py-2.5 outline-none font-mono"
-                />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white cursor-pointer">
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
+              <label className="text-slate-300 font-medium block mb-1">Admin Password</label>
+              <input
+                type="password"
+                required
+                value={adminPassword}
+                onChange={(e) => setAdminPassword(e.target.value)}
+                placeholder="Admin Password"
+                className="w-full bg-[#161c2a] border border-[#242e44] focus:border-amber-400 text-white rounded-xl px-4 py-2.5 outline-none font-mono"
+              />
             </div>
+
             {authError && <div className="text-xs text-rose-400 font-medium">{authError}</div>}
-            <button type="submit" className="w-full bg-amber-400 hover:bg-amber-300 text-black font-extrabold py-3 rounded-xl transition-all shadow-md">Sign In to Super Admin Desk</button>
+
+            <button
+              type="submit"
+              className="w-full bg-amber-400 hover:bg-amber-300 text-black font-extrabold py-3 rounded-xl transition-all shadow-md shadow-amber-500/20 cursor-pointer"
+            >
+              Sign In to Super Admin Desk
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab('login');
+                if (typeof window !== 'undefined') {
+                  window.history.pushState({}, '', '/login');
+                }
+              }}
+              className="w-full text-center text-xs text-slate-400 hover:text-white pt-2 block cursor-pointer"
+            >
+              ← Back to User Login
+            </button>
           </form>
         </div>
       </div>
     );
   }
 
+  const menuItems = [
+    {
+      id: 'dashboard',
+      label: 'Admin Dashboard',
+      description: 'Metrics & Live Overview',
+      icon: LayoutDashboard,
+      badge: 0,
+    },
+    {
+      id: 'users',
+      label: 'User Management',
+      description: 'Accounts & Suspensions',
+      icon: Users,
+      badge: 0,
+    },
+    {
+      id: 'support',
+      label: 'Support Inbox',
+      description: 'Live 2-Way Chat Desk',
+      icon: MessageSquare,
+      badge: pendingSupport,
+      badgeColor: 'bg-rose-500 text-white',
+    },
+    {
+      id: 'balance',
+      label: 'Balance Management',
+      description: 'Credits & Manual Adjustments',
+      icon: DollarSign,
+      badge: 0,
+    },
+    {
+      id: 'markets',
+      label: 'Coins & Market Pairs',
+      description: 'Spread & Calibration',
+      icon: Activity,
+      badge: 0,
+    },
+    {
+      id: 'deposits',
+      label: 'Deposit Requests',
+      description: 'TXID Verification & Approvals',
+      icon: CreditCard,
+      badge: pendingDeposits,
+      badgeColor: 'bg-emerald-500 text-black',
+    },
+    {
+      id: 'withdrawals',
+      label: 'Withdrawal Requests',
+      description: 'Payout Approvals & Rejections',
+      icon: ArrowUpRight,
+      badge: pendingWithdrawals,
+      badgeColor: 'bg-rose-500 text-white',
+    },
+    {
+      id: 'trades',
+      label: 'Trading Management',
+      description: 'Live & Closed Positions',
+      icon: TrendingUp,
+      badge: activeTradesCount,
+      badgeColor: 'bg-amber-400 text-black',
+    },
+    {
+      id: 'reports',
+      label: 'Reports & History',
+      description: 'Cashflow & Audit Trail',
+      icon: FileText,
+      badge: 0,
+    },
+    {
+      id: 'settings',
+      label: 'Settings Management',
+      description: 'Platform Configurations',
+      icon: Settings,
+      badge: 0,
+    },
+  ];
+
   return (
-    <div className="min-h-[90vh] bg-[#0b0e14] text-white flex flex-col sm:flex-row">
-      {/* বাম পাশের এডমিন মেনুবার */}
-      <div className="w-full sm:w-64 bg-[#121622] border-r border-[#1f273a] p-4 flex flex-col justify-between shrink-0">
-        <div className="space-y-2">
-          <div className="pb-4 border-b border-[#1f273a] text-center font-bold text-amber-400 text-xs">CPT ADMIN CONTROL</div>
-          {[
-            { id: 'dashboard', label: 'Dashboard' },
-            { id: 'users', label: 'User Management' },
-            { id: 'support', label: 'Support Inbox' },
-            { id: 'balance', label: 'Balance settings' },
-            { id: 'markets', label: 'Coins & Market Pairs' },
-            { id: 'deposits', label: 'Deposit Requests' },
-            { id: 'withdrawals', label: 'Withdrawal Requests' },
-            { id: 'trades', label: 'Trading Management' },
-            { id: 'reports', label: 'Reports & History' },
-            { id: 'settings', label: 'System Settings' }
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveAdminSubTab(tab.id)}
-              className={`w-full text-left px-4 py-2.5 rounded-xl text-xs font-medium transition-all ${activeAdminSubTab === tab.id ? 'bg-amber-400 text-black font-bold' : 'text-slate-400 hover:bg-[#161c2a] hover:text-white'}`}
-            >
-              {tab.label}
-            </button>
-          ))}
+    <div className="min-h-[90vh] bg-[#0b0e14] flex flex-col">
+      {/* Top Admin Status Bar */}
+      <div className="bg-[#121623] border-b border-[#1f273a] px-4 py-2.5 flex items-center justify-between text-xs select-none">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="md:hidden p-1.5 rounded-lg bg-[#1a2133] text-slate-300"
+          >
+            {sidebarOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+          </button>
+
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span className="font-bold text-white uppercase tracking-wider">
+              CPT Markets Admin Portal
+            </span>
+          </div>
+
+          <span className="hidden sm:inline-block text-slate-400">|</span>
+          <span className="hidden sm:inline-block text-slate-400">
+            Operator: <strong className="text-amber-400">{adminName}</strong>
+          </span>
         </div>
-        <button onClick={() => { setIsAuthenticated(false); sessionStorage.removeItem('cpt_admin_auth'); setActiveTab('home'); }} className="mt-8 text-slate-400 hover:text-rose-400 flex items-center gap-2 text-xs font-bold px-4 py-2">
-          <LogOut className="w-4 h-4" /> Exit Admin
-        </button>
+
+        <div className="flex items-center gap-4">
+          <div className="hidden sm:flex items-center gap-3 text-[11px] text-slate-400 font-mono">
+            <span>Online Traders: <strong className="text-emerald-400">{users.filter((u) => u.isOnline).length}</strong></span>
+            <span>Live Trades: <strong className="text-amber-400">{activeTradesCount}</strong></span>
+          </div>
+
+          <button
+            onClick={() => setActiveTab('home')}
+            className="flex items-center gap-1.5 bg-[#1a2233] hover:bg-[#232d44] text-slate-200 border border-[#2b3752] px-3 py-1 rounded-lg text-xs font-medium transition-colors"
+          >
+            <ArrowLeft className="w-3.5 h-3.5 text-amber-400" />
+            <span>Switch to Trading View</span>
+          </button>
+
+          <button
+            onClick={handleAdminLogout}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition-colors"
+            title="Log Out of Admin Panel"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
-      {/* ডান পাশের মূল কন্টেন্ট উইন্ডো */}
-      <div className="flex-1 p-4 sm:p-6 overflow-x-hidden">
-        {activeAdminSubTab === 'dashboard' && <AdminDashboardTab />}
-        {activeAdminSubTab === 'users' && <AdminUsersTab />}
-        {activeAdminSubTab === 'support' && <AdminSupportTab />}
-        {activeAdminSubTab === 'balance' && <AdminBalanceTab />}
-        {activeAdminSubTab === 'markets' && <AdminMarketsTab />}
-        {activeAdminSubTab === 'deposits' && <AdminDepositsTab />}
-        {activeAdminSubTab === 'withdrawals' && <AdminWithdrawalsTab />}
-        {activeAdminSubTab === 'trades' && <AdminTradesTab />}
-        {activeAdminSubTab === 'reports' && <AdminReportsTab />}
-        {activeAdminSubTab === 'settings' && <AdminSettingsTab />}
+      {/* Main Admin Content Body with Sidebar */}
+      <div className="flex-1 flex max-w-7xl w-full mx-auto p-4 sm:p-6 gap-6">
+        {/* Sidebar Navigation */}
+        <aside
+          className={`fixed md:static inset-y-0 left-0 z-40 w-64 bg-[#10141f] md:bg-transparent border-r md:border-r-0 border-[#1e2538] p-4 md:p-0 flex flex-col justify-between shrink-0 transition-transform ${
+            sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+          }`}
+        >
+          <div className="space-y-1.5">
+            <div className="px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              Admin Navigation
+            </div>
+
+            {menuItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeAdminSubTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    setActiveAdminSubTab(item.id);
+                    setSidebarOpen(false);
+                  }}
+                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-left transition-all cursor-pointer ${
+                    isActive
+                      ? 'bg-amber-400 text-black font-extrabold shadow-md shadow-amber-500/20'
+                      : 'text-slate-300 hover:bg-[#151a28] hover:text-white border border-transparent'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Icon className={`w-4 h-4 ${isActive ? 'text-black' : 'text-amber-400'}`} />
+                    <div>
+                      <span className="text-xs font-semibold block">{item.label}</span>
+                      <span
+                        className={`text-[10px] block ${
+                          isActive ? 'text-black/75' : 'text-slate-500'
+                        }`}
+                      >
+                        {item.description}
+                      </span>
+                    </div>
+                  </div>
+
+                  {item.badge > 0 && (
+                    <span
+                      className={`text-[10px] font-bold px-1.5 py-0.2 rounded-full ${
+                        isActive ? 'bg-black text-amber-400' : item.badgeColor || 'bg-amber-400 text-black'
+                      }`}
+                    >
+                      {item.badge}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Sidebar bottom footer */}
+          <div className="pt-4 border-t border-[#1e2538] text-[11px] text-slate-500 space-y-1">
+            <div className="flex items-center gap-1.5 text-slate-400">
+              <Shield className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Role: Super Administrator</span>
+            </div>
+            <div>CPT Market UK v2.4</div>
+          </div>
+        </aside>
+
+        {/* Dynamic Admin Sub-View */}
+        <main className="flex-1 overflow-x-hidden min-w-0">
+          {activeAdminSubTab === 'dashboard' && (
+            <AdminDashboardTab onNavigate={(tab) => setActiveAdminSubTab(tab)} />
+          )}
+          {activeAdminSubTab === 'users' && <AdminUsersTab />}
+          {activeAdminSubTab === 'support' && <AdminSupportTab />}
+          {activeAdminSubTab === 'balance' && <AdminBalanceTab />}
+          {activeAdminSubTab === 'markets' && <AdminMarketsTab />}
+          {activeAdminSubTab === 'deposits' && <AdminDepositsTab />}
+          {activeAdminSubTab === 'withdrawals' && <AdminWithdrawalsTab />}
+          {activeAdminSubTab === 'trades' && <AdminTradesTab />}
+          {activeAdminSubTab === 'reports' && <AdminReportsTab />}
+          {activeAdminSubTab === 'settings' && <AdminSettingsTab />}
+        </main>
       </div>
     </div>
   );

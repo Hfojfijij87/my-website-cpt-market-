@@ -1,5 +1,6 @@
 import React from 'react';
 import { AppProvider, useApp } from './context/AppContext';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { Header } from './components/Header';
 import { HomeView } from './views/HomeView';
 import { MarketView } from './views/MarketView';
@@ -51,10 +52,28 @@ const CookieConsentBanner: React.FC = () => {
 const AppContent: React.FC = () => {
   const { activeTab, setActiveTab, isUserLoggedIn, setIsSupportOpen } = useApp();
 
+  // Listen to browser navigation popstate
+  React.useEffect(() => {
+    const handleLocation = () => {
+      const path = window.location.pathname.toLowerCase();
+      if (path === '/admin' || path.startsWith('/admin')) {
+        setActiveTab('admin');
+      } else if (path === '/login' || path === '/register') {
+        setActiveTab('login');
+      } else if (path === '/' && !isUserLoggedIn) {
+        setActiveTab('login');
+      }
+    };
+    window.addEventListener('popstate', handleLocation);
+    return () => window.removeEventListener('popstate', handleLocation);
+  }, [isUserLoggedIn, setActiveTab]);
+
+  const showHeader = isUserLoggedIn && activeTab !== 'login' && activeTab !== 'admin';
+
   return (
     <div className="min-h-screen bg-[#0b0e14] text-slate-100 flex flex-col font-sans">
-      {/* Top Header */}
-      <Header />
+      {/* Top Header - Rendered strictly for authenticated user tabs, NEVER on Login or Admin */}
+      {showHeader && <Header />}
 
       {/* Main Routed Content */}
       <main className="flex-1 pb-24 md:pb-12">
@@ -179,8 +198,10 @@ const AppContent: React.FC = () => {
 
 export default function App() {
   return (
-    <AppProvider>
-      <AppContent />
-    </AppProvider>
+    <ErrorBoundary>
+      <AppProvider>
+        <AppContent />
+      </AppProvider>
+    </ErrorBoundary>
   );
 }

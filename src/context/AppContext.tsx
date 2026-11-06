@@ -25,7 +25,15 @@ import {
   initialWithdrawalRequests,
   initialAuditLogs,
   initialSystemSettings,
+  OFFICIAL_REFERRAL_CODES,
 } from '../data/initialData';
+import {
+  syncUserToSupabase,
+  syncTradeToSupabase,
+  syncTicketToSupabase,
+  syncDepositToSupabase,
+  syncWithdrawalToSupabase,
+} from '../lib/supabase';
 
 interface AppContextType {
   // Current user & Auth
@@ -44,6 +52,7 @@ interface AppContextType {
     referralCode: string;
   }) => { success: boolean; message: string; user?: User };
   logoutUser: () => void;
+  updateUserAvatar: (avatarUrl: string) => void;
 
   // Navigation
   activeTab: 'home' | 'market' | 'trade' | 'history' | 'account' | 'admin' | 'login';
@@ -180,58 +189,63 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>(() => loadState('audit', initialAuditLogs));
   const [systemSettings, setSystemSettings] = useState<SystemSettings>(() => loadState('settings', initialSystemSettings));
 
-  // Navigation & UI state with URL /admin router detection
+  // Navigation & UI state with URL /admin, /login, /register router detection
   const [activeTab, setActiveTab] = useState<'home' | 'market' | 'trade' | 'history' | 'account' | 'admin' | 'login'>(() => {
     if (typeof window !== 'undefined') {
       const path = window.location.pathname.toLowerCase();
       const hash = window.location.hash.toLowerCase();
       const params = new URLSearchParams(window.location.search);
       if (
-        path.endsWith('/admin') ||
+        path.startsWith('/admin') ||
         hash === '#admin' ||
         params.get('tab') === 'admin' ||
         params.get('admin') === 'true'
       ) {
         return 'admin';
       }
+      if (path.includes('/login') || path.includes('/register')) {
+        return 'login';
+      }
     }
-    return 'home';
+    // Default to 'login' page for unauthenticated visitors as requested
+    const savedLogin = loadState('isUserLoggedIn', false);
+    return savedLogin ? 'home' : 'login';
   });
 
   const [isAdmin, setIsAdmin] = useState<boolean>(() => loadState('isAdmin', false));
-  const [isUserLoggedIn, setIsUserLoggedIn] = useState<boolean>(() => loadState('isUserLoggedIn', true));
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState<boolean>(() => loadState('isUserLoggedIn', false));
   const adminName = 'Chief Operator (UK)';
 
-  // Automatically listen to /admin, #admin and ?tab=admin URL navigation
+  // Automatically listen to /admin, #admin, /login and ?tab=admin URL navigation
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const handleAdminUrl = () => {
+      const handleUrlRoutes = () => {
         const path = window.location.pathname.toLowerCase();
         const hash = window.location.hash.toLowerCase();
         const params = new URLSearchParams(window.location.search);
         if (
-          path.endsWith('/admin') ||
+          path.startsWith('/admin') ||
           hash === '#admin' ||
           params.get('tab') === 'admin' ||
           params.get('admin') === 'true'
         ) {
-          const superAdminUser = users.find((u) => u.role === 'superadmin' || u.uid === '100001');
-          if (superAdminUser) {
-            setCurrentUserId(superAdminUser.id);
-          }
-          setIsAdmin(true);
+          // Open Admin tab and let AdminPanel handle secure Admin authentication
           setActiveTab('admin');
+        } else if (path.includes('/login') || path.includes('/register')) {
+          setActiveTab('login');
+        } else if (path === '/' && !isUserLoggedIn) {
+          setActiveTab('login');
         }
       };
-      handleAdminUrl();
-      window.addEventListener('hashchange', handleAdminUrl);
-      window.addEventListener('popstate', handleAdminUrl);
+      handleUrlRoutes();
+      window.addEventListener('hashchange', handleUrlRoutes);
+      window.addEventListener('popstate', handleUrlRoutes);
       return () => {
-        window.removeEventListener('hashchange', handleAdminUrl);
-        window.removeEventListener('popstate', handleAdminUrl);
+        window.removeEventListener('hashchange', handleUrlRoutes);
+        window.removeEventListener('popstate', handleUrlRoutes);
       };
     }
-  }, [users]);
+  }, [isUserLoggedIn]);
 
   const [isSupportOpen, setIsSupportOpen] = useState(false);
   const [activeSupportUsers, setActiveSupportUsers] = useState<{ userId: string; userName: string; uid: string; enteredAt: string }[]>(() =>
@@ -244,63 +258,71 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [selectedTradeDetails, setSelectedTradeDetails] = useState<Trade | null>(null);
 
+  const safeStorageSet = (key: string, value: any) => {
+    try {
+      localStorage.setItem(`cpt_${key}`, JSON.stringify(value));
+    } catch (err) {
+      console.warn(`[SafeStorage] Quota exceeded or error saving cpt_${key}:`, err);
+    }
+  };
+
   useEffect(() => {
-    localStorage.setItem('cpt_activeSupportUsers', JSON.stringify(activeSupportUsers));
+    safeStorageSet('activeSupportUsers', activeSupportUsers);
   }, [activeSupportUsers]);
 
-  // Sync to localStorage
+  // Sync to localStorage safely
   useEffect(() => {
-    localStorage.setItem('cpt_users', JSON.stringify(users));
+    safeStorageSet('users', users);
   }, [users]);
 
   useEffect(() => {
-    localStorage.setItem('cpt_currentUserId', JSON.stringify(currentUserId));
+    safeStorageSet('currentUserId', currentUserId);
   }, [currentUserId]);
 
   useEffect(() => {
-    localStorage.setItem('cpt_coins', JSON.stringify(coins));
+    safeStorageSet('coins', coins);
   }, [coins]);
 
   useEffect(() => {
-    localStorage.setItem('cpt_trades', JSON.stringify(trades));
+    safeStorageSet('trades', trades);
   }, [trades]);
 
   useEffect(() => {
-    localStorage.setItem('cpt_tickets', JSON.stringify(supportTickets));
+    safeStorageSet('tickets', supportTickets);
   }, [supportTickets]);
 
   useEffect(() => {
-    localStorage.setItem('cpt_adjustments', JSON.stringify(balanceAdjustments));
+    safeStorageSet('adjustments', balanceAdjustments);
   }, [balanceAdjustments]);
 
   useEffect(() => {
-    localStorage.setItem('cpt_deposits', JSON.stringify(depositRequests));
+    safeStorageSet('deposits', depositRequests);
   }, [depositRequests]);
 
   useEffect(() => {
-    localStorage.setItem('cpt_withdrawals', JSON.stringify(withdrawalRequests));
+    safeStorageSet('withdrawals', withdrawalRequests);
   }, [withdrawalRequests]);
 
   useEffect(() => {
-    localStorage.setItem('cpt_audit', JSON.stringify(auditLogs));
+    safeStorageSet('audit', auditLogs);
   }, [auditLogs]);
 
   useEffect(() => {
-    localStorage.setItem('cpt_settings', JSON.stringify(systemSettings));
+    safeStorageSet('settings', systemSettings);
   }, [systemSettings]);
 
   useEffect(() => {
-    localStorage.setItem('cpt_isAdmin', JSON.stringify(isAdmin));
+    safeStorageSet('isAdmin', isAdmin);
   }, [isAdmin]);
 
   useEffect(() => {
-    localStorage.setItem('cpt_isUserLoggedIn', JSON.stringify(isUserLoggedIn));
+    safeStorageSet('isUserLoggedIn', isUserLoggedIn);
   }, [isUserLoggedIn]);
 
   const [language, setLanguage] = useState<Language>(() => loadState('language', 'en'));
 
   useEffect(() => {
-    localStorage.setItem('cpt_language', JSON.stringify(language));
+    safeStorageSet('language', language);
   }, [language]);
 
   const [marketDataMode, setMarketDataMode] = useState<'live_stream' | 'manual_benchmark'>(() =>
@@ -308,7 +330,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   );
 
   useEffect(() => {
-    localStorage.setItem('cpt_marketDataMode', JSON.stringify(marketDataMode));
+    safeStorageSet('marketDataMode', marketDataMode);
   }, [marketDataMode]);
 
   const currentUser = users.find((u) => u.id === currentUserId) || users[0];
@@ -462,19 +484,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return { success: false, message: 'Please enter a valid email address.' };
     }
 
-    // Rule 1 & 2: Referral code is strictly required and must match an existing user's UID
+    // Rule 1 & 2: Referral code is strictly required and must match an existing user's UID or official master code
     if (!cleanRef) {
       return {
         success: false,
-        message: 'A valid Referral Code (Inviter UID) is required to register an account.',
+        message: 'A valid Referral Code (Inviter UID or Official Code) is required to register an account.',
       };
     }
 
-    const referrer = users.find((u) => u.uid === cleanRef);
+    const officialMatch = OFFICIAL_REFERRAL_CODES.find((o) => o.code === cleanRef);
+    const userMatch = users.find((u) => u.uid === cleanRef);
+    const referrer = officialMatch
+      ? { uid: officialMatch.code, name: officialMatch.inviterName }
+      : userMatch
+      ? { uid: userMatch.uid, name: userMatch.name }
+      : null;
+
     if (!referrer) {
       return {
         success: false,
-        message: `Invalid Referral Code "${cleanRef}". The inviter account UID does not exist in our registry.`,
+        message: `Invalid Referral Code "${cleanRef}". Please enter a valid inviter UID or official code (100001, 777888, 992282).`,
       };
     }
 
@@ -506,13 +535,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       isOnline: true,
       referredByUid: referrer.uid,
       role: 'user',
-      password: password || 'default123',
+      password: password || '123456',
       avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
       createdAt: nowStr,
       lastLogin: nowStr,
     };
 
     setUsers((prev) => [newUser, ...prev]);
+    syncUserToSupabase(newUser);
     setCurrentUserId(newId);
     setIsUserLoggedIn(true);
     setActiveTab('home');
@@ -554,7 +584,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
   };
 
-  const loginUser = (identifier: string, _password?: string) => {
+  const loginUser = (identifier: string, password?: string) => {
     const clean = identifier.trim().toLowerCase();
     const found = users.find(
       (u) =>
@@ -563,25 +593,51 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         u.uid === clean
     );
 
-    if (found) {
-      if (found.status === 'suspended') {
-        return { success: false, message: 'This account has been suspended by the administrator.' };
-      }
-      setCurrentUserId(found.id);
-      setIsUserLoggedIn(true);
-      setActiveTab('home');
-      return { success: true, message: `Welcome back, ${found.name}!` };
+    if (!found) {
+      return {
+        success: false,
+        message: 'Account not found. Please verify your username/email or click Create Account.',
+      };
     }
 
-    return {
-      success: false,
-      message: 'Account not found. Please verify your username/email or click Create Account.',
-    };
+    if (found.status === 'suspended') {
+      return { success: false, message: 'This account has been suspended by the administrator.' };
+    }
+
+    // Verify registered password
+    if (password) {
+      const validPass = found.password || '123456';
+      if (password !== validPass) {
+        return { success: false, message: 'Incorrect password. Please verify your credentials.' };
+      }
+    }
+
+    setCurrentUserId(found.id);
+    setIsUserLoggedIn(true);
+    setActiveTab('home');
+    if (typeof window !== 'undefined') {
+      window.history.pushState({}, '', '/');
+    }
+    return { success: true, message: `Welcome back, ${found.name}!` };
   };
 
   const logoutUser = () => {
     setIsUserLoggedIn(false);
     setActiveTab('login');
+    if (typeof window !== 'undefined') {
+      window.history.pushState({}, '', '/login');
+    }
+  };
+
+  const updateUserAvatar = (avatarUrl: string) => {
+    setUsers((prev) => {
+      const updated = prev.map((u) => (u.id === currentUserId ? { ...u, avatar: avatarUrl } : u));
+      const target = updated.find((u) => u.id === currentUserId);
+      if (target) {
+        syncUserToSupabase(target);
+      }
+      return updated;
+    });
   };
 
   const updateUserStatus = (userId: string, status: 'active' | 'suspended') => {
@@ -1422,6 +1478,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         loginUser,
         registerUser,
         logoutUser,
+        updateUserAvatar,
         activeTab,
         setActiveTab,
         isSupportOpen,

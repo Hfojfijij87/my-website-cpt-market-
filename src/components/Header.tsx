@@ -148,11 +148,12 @@ export const Header: React.FC = () => {
             )}
           </button>
 
-          {/* Language Selector Dropdown */}
+          {/* Language Selector Dropdown (Responsive on Mobile and Desktop) */}
           <div className="relative">
             <button
+              type="button"
               onClick={() => setLangDropdownOpen(!langDropdownOpen)}
-              className="flex items-center gap-1.5 bg-[#121622] hover:bg-[#1a2030] border border-[#242c3f] px-2 sm:px-2.5 py-1.5 rounded-md text-xs text-slate-200 transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 bg-[#121622] hover:bg-[#1a2030] active:scale-95 border border-[#242c3f] px-2 sm:px-2.5 py-1.5 rounded-md text-xs text-slate-200 transition-all cursor-pointer"
               title="Select Language"
             >
               <span className="text-sm leading-none">{currentLangObj.flag}</span>
@@ -161,38 +162,56 @@ export const Header: React.FC = () => {
             </button>
 
             {langDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-[#131722] border border-[#262e42] rounded-xl shadow-2xl p-1.5 z-50">
-                <div className="px-2.5 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-[#22293b]">
-                  Language / ভাষা
-                </div>
-                <div className="py-1 space-y-0.5">
-                  {LANGUAGES.map((lang) => (
+              <>
+                {/* Backdrop overlay for mobile touch dismiss */}
+                <div
+                  className="fixed inset-0 z-40 bg-black/50 md:bg-transparent"
+                  onClick={() => setLangDropdownOpen(false)}
+                />
+
+                {/* Dropdown Menu - Centered modal on mobile, clean dropdown on desktop */}
+                <div className="fixed inset-x-4 top-24 md:static md:inset-auto md:absolute md:right-0 md:mt-2 w-auto md:w-52 max-w-xs mx-auto bg-[#131722] border border-[#262e42] rounded-xl shadow-2xl p-2 z-50">
+                  <div className="flex items-center justify-between px-2.5 py-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-[#22293b]">
+                    <span>Language / ভাষা</span>
                     <button
-                      key={lang.code}
-                      onClick={() => {
-                        setLanguage(lang.code);
-                        setLangDropdownOpen(false);
-                      }}
-                      className={`w-full flex items-center justify-between px-2.5 py-1.5 text-xs rounded-lg transition-colors cursor-pointer ${
-                        language === lang.code
-                          ? 'bg-amber-400/15 text-amber-300 font-bold'
-                          : 'text-slate-300 hover:bg-[#1e2536] hover:text-white'
-                      }`}
+                      type="button"
+                      onClick={() => setLangDropdownOpen(false)}
+                      className="md:hidden text-slate-400 hover:text-white px-1.5 py-0.5 rounded cursor-pointer"
                     >
-                      <div className="flex items-center gap-2">
-                        <span className="text-base leading-none">{lang.flag}</span>
-                        <span>{lang.label}</span>
-                      </div>
-                      {language === lang.code && <Check className="w-3.5 h-3.5 text-amber-400" />}
+                      ✕
                     </button>
-                  ))}
+                  </div>
+                  <div className="py-1 max-h-60 overflow-y-auto space-y-1">
+                    {LANGUAGES.map((lang) => (
+                      <button
+                        key={lang.code}
+                        type="button"
+                        onClick={() => {
+                          setLanguage(lang.code);
+                          setLangDropdownOpen(false);
+                        }}
+                        className={`w-full flex items-center justify-between px-3 py-2 text-xs rounded-lg transition-colors cursor-pointer ${
+                          language === lang.code
+                            ? 'bg-amber-400/20 text-amber-300 font-bold border border-amber-500/30'
+                            : 'text-slate-300 hover:bg-[#1e2536] hover:text-white'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <span className="text-lg leading-none">{lang.flag}</span>
+                          <span className="text-sm">{lang.label}</span>
+                        </div>
+                        {language === lang.code && <Check className="w-4 h-4 text-amber-400" />}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              </>
             )}
           </div>
 
-          {/* Single Corner UID Badge matching screenshot image_4261209b.png */}
+          {/* Single Corner UID Badge matching screenshot */}
           <button
+            type="button"
             onClick={() => setActiveTab('account')}
             className="flex items-center gap-1.5 bg-[#141925] hover:bg-[#1c2333] border border-[#232c40] px-2.5 py-1.5 rounded-lg text-xs transition-all cursor-pointer group"
             title="My Account"
@@ -203,29 +222,6 @@ export const Header: React.FC = () => {
             </span>
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" title="Online"></span>
           </button>
-
-          {/* ADMIN PANEL Direct Button (Visible EXCLUSIVELY to Super Admin Ripu - 100% HIDDEN for regular customers) */}
-          {isSuperAdmin && (
-            <button
-              onClick={() => {
-                setIsAdmin(true);
-                setActiveTab('admin');
-              }}
-              className={`relative flex items-center gap-2 px-3.5 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer ${
-                activeTab === 'admin'
-                  ? 'bg-amber-400 text-black shadow-lg shadow-amber-500/25 ring-2 ring-amber-400/50'
-                  : 'bg-gradient-to-r from-amber-600/90 to-amber-500 text-black hover:from-amber-500 hover:to-amber-400 shadow-md shadow-amber-500/20'
-              }`}
-            >
-              <Shield className="w-3.5 h-3.5 text-black" />
-              <span>Admin Panel</span>
-              {totalAdminPending > 0 && (
-                <span className="bg-rose-600 text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full">
-                  {totalAdminPending}
-                </span>
-              )}
-            </button>
-          )}
         </div>
       </div>
     </header>

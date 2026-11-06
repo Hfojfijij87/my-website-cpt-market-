@@ -10,22 +10,29 @@ import {
   SystemSettings,
 } from '../types';
 
+// 3 Official Platform Master Referral Codes requested by Admin
+export const OFFICIAL_REFERRAL_CODES = [
+  { code: '100001', label: 'Official Platform Master Code', inviterName: 'CPT Markets Global' },
+  { code: '777888', label: 'VIP Global Trader Referral Code', inviterName: 'CPT Markets UK' },
+  { code: '992282', label: 'Official Agency Partner Code', inviterName: 'CPT Global Partners' },
+];
+
 export const initialUsers: User[] = [
   {
     id: 'user-100001',
     uid: '100001',
-    name: 'Ripu (Super Admin)',
-    email: 'ripuworkshop@gmail.com',
-    phone: '+880 1700 000000',
+    name: 'dashe99228222',
+    email: 'dashe99228222@cptmarket.uk',
+    phone: '+44 7900 992282',
     tradingBalance: 50000.00,
     fundingBalance: 10000.00,
     status: 'active',
     isOnline: true,
     role: 'superadmin',
-    password: 'ripu2026',
+    password: '99228222',
     avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
     createdAt: '2026-01-01 00:00:00',
-    lastLogin: '2026-11-05 04:00:00',
+    lastLogin: '2026-11-06 04:00:00',
   },
   {
     id: 'user-827592',

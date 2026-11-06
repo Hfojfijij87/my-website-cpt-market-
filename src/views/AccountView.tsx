@@ -21,7 +21,12 @@ import {
   Share2,
   ExternalLink,
   Lock,
+  Camera,
+  Upload,
+  Trash2,
+  Loader2,
 } from 'lucide-react';
+import { compressImageFile } from '../utils/imageCompressor';
 
 export const AccountView: React.FC = () => {
   const {
@@ -34,6 +39,7 @@ export const AccountView: React.FC = () => {
     submitWithdrawalRequest,
     withdrawalRequests,
     logoutUser,
+    updateUserAvatar,
   } = useApp();
 
   const [activeSubView, setActiveSubView] = useState<
@@ -74,6 +80,40 @@ export const AccountView: React.FC = () => {
     } else {
       setCopiedLink(true);
       setTimeout(() => setCopiedLink(false), 2000);
+    }
+  };
+
+  // Profile picture upload & compression state (prevents quota error and mobile crashes)
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [avatarFeedback, setAvatarFeedback] = useState<string | null>(null);
+
+  const handleAvatarFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Reset input so user can re-select the same image file if desired
+    e.target.value = '';
+
+    setIsUploadingAvatar(true);
+    setAvatarFeedback(null);
+
+    try {
+      // Compress mobile gallery image to lightweight 320x320 JPEG (~25KB)
+      const compressed = await compressImageFile(file, {
+        maxWidth: 320,
+        maxHeight: 320,
+        quality: 0.85,
+        mimeType: 'image/jpeg',
+      });
+
+      updateUserAvatar(compressed);
+      setAvatarFeedback('Profile photo updated successfully!');
+      setTimeout(() => setAvatarFeedback(null), 3500);
+    } catch (err) {
+      console.error('Failed to compress/upload avatar:', err);
+      alert('Unable to load photo. Please choose another image file (JPG or PNG).');
+    } finally {
+      setIsUploadingAvatar(false);
     }
   };
 
@@ -171,8 +211,43 @@ export const AccountView: React.FC = () => {
       {/* User Header Profile Card matching Screenshot 5 */}
       <div className="bg-[#10141f] border border-[#1e2538] rounded-2xl p-6 shadow-xl space-y-4">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-amber-500 via-amber-400 to-amber-200 text-black font-extrabold text-xl flex items-center justify-center shadow-lg shadow-amber-500/25 ring-2 ring-amber-400/40 shrink-0">
-            {currentUser.name.charAt(0).toUpperCase()}
+          <div className="relative group shrink-0">
+            {currentUser.avatar ? (
+              <img
+                src={currentUser.avatar}
+                alt={currentUser.name}
+                className="w-16 h-16 rounded-full object-cover border-2 border-amber-400/60 shadow-lg shadow-amber-500/20"
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).style.display = 'none';
+                }}
+              />
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-amber-500 via-amber-400 to-amber-200 text-black font-extrabold text-2xl flex items-center justify-center shadow-lg shadow-amber-500/25 ring-2 ring-amber-400/40">
+                {currentUser.name.charAt(0).toUpperCase()}
+              </div>
+            )}
+
+            {isUploadingAvatar ? (
+              <div className="absolute inset-0 bg-black/70 rounded-full flex items-center justify-center backdrop-blur-xs">
+                <Loader2 className="w-5 h-5 text-amber-400 animate-spin" />
+              </div>
+            ) : (
+              <label
+                htmlFor="avatar-upload"
+                className="absolute -bottom-1 -right-1 bg-[#1a2336] hover:bg-[#25324d] text-amber-400 border border-amber-500/30 w-7 h-7 rounded-full flex items-center justify-center cursor-pointer shadow-md transition-all active:scale-90"
+                title="Upload profile picture"
+              >
+                <Camera className="w-3.5 h-3.5" />
+              </label>
+            )}
+
+            <input
+              id="avatar-upload"
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleAvatarFile}
+            />
           </div>
           <div className="min-w-0 flex-1">
             <h2 className="text-lg font-bold text-white capitalize truncate">{currentUser.name}</h2>
@@ -181,6 +256,29 @@ export const AccountView: React.FC = () => {
               <span className="font-mono text-xs font-bold text-amber-400">{currentUser.uid}</span>
               <span className="text-[11px] text-slate-400">- Main Account</span>
             </div>
+            <div className="flex items-center gap-2 mt-1">
+              <label
+                htmlFor="avatar-upload"
+                className="inline-flex items-center gap-1 text-[11px] text-amber-400 hover:text-amber-300 font-semibold cursor-pointer"
+              >
+                <Camera className="w-3 h-3" />
+                <span>{isUploadingAvatar ? 'Saving photo...' : 'Set Profile Photo'}</span>
+              </label>
+              {currentUser.avatar && (
+                <button
+                  type="button"
+                  onClick={() => updateUserAvatar('')}
+                  className="text-[10px] text-slate-400 hover:text-rose-400 cursor-pointer transition-colors"
+                >
+                  • Remove
+                </button>
+              )}
+            </div>
+            {avatarFeedback && (
+              <div className="text-[11px] text-emerald-400 font-medium mt-1 animate-in fade-in">
+                ✓ {avatarFeedback}
+              </div>
+            )}
           </div>
         </div>
 
@@ -814,6 +912,58 @@ export const AccountView: React.FC = () => {
             >
               ← Back to Account
             </button>
+          </div>
+
+          {/* Avatar Management Card */}
+          <div className="bg-[#141a26] border border-[#20293d] rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5">
+              {currentUser.avatar ? (
+                <img
+                  src={currentUser.avatar}
+                  alt={currentUser.name}
+                  className="w-14 h-14 rounded-full object-cover border-2 border-amber-400 shadow-md"
+                />
+              ) : (
+                <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-amber-500 to-amber-300 text-black font-extrabold text-xl flex items-center justify-center">
+                  {currentUser.name.charAt(0).toUpperCase()}
+                </div>
+              )}
+              <div>
+                <span className="font-bold text-white text-sm block">Profile Photo (অ্যাকাউন্টের ছবি)</span>
+                <span className="text-[11px] text-slate-400">PNG, JPG, or WEBP supported</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <label
+                htmlFor="avatar-upload-sub"
+                className="bg-amber-400 hover:bg-amber-300 disabled:opacity-50 text-black font-bold px-3.5 py-2 rounded-lg text-xs cursor-pointer flex items-center gap-1.5 transition-colors shadow-sm"
+              >
+                {isUploadingAvatar ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Upload className="w-3.5 h-3.5" />
+                )}
+                <span>{isUploadingAvatar ? 'Saving photo...' : 'Upload Photo'}</span>
+              </label>
+              <input
+                id="avatar-upload-sub"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleAvatarFile}
+              />
+              {currentUser.avatar && (
+                <button
+                  type="button"
+                  onClick={() => updateUserAvatar('')}
+                  className="bg-[#1e2638] hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 p-2 rounded-lg transition-colors cursor-pointer"
+                  title="Remove custom photo"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="space-y-4 text-xs">

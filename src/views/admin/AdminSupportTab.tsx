@@ -21,6 +21,7 @@ import {
   ZoomIn,
   X,
 } from 'lucide-react';
+import { compressImageFile } from '../../utils/imageCompressor';
 
 export const AdminSupportTab: React.FC = () => {
   const {
@@ -69,20 +70,37 @@ export const AdminSupportTab: React.FC = () => {
     return matchesFilter && matchesSearch;
   });
 
-  const handleAdminFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAdminFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     const isImage = file.type.startsWith('image/');
-    const reader = new FileReader();
-    reader.onload = () => {
-      setAdminAttachment({
-        url: reader.result as string,
-        name: file.name,
-        type: isImage ? 'image' : 'file',
-      });
-    };
-    reader.readAsDataURL(file);
+    try {
+      if (isImage) {
+        const compressed = await compressImageFile(file, {
+          maxWidth: 960,
+          maxHeight: 960,
+          quality: 0.8,
+        });
+        setAdminAttachment({
+          url: compressed,
+          name: file.name,
+          type: 'image',
+        });
+      } else {
+        const reader = new FileReader();
+        reader.onload = () => {
+          setAdminAttachment({
+            url: reader.result as string,
+            name: file.name,
+            type: 'file',
+          });
+        };
+        reader.readAsDataURL(file);
+      }
+    } catch (err) {
+      console.warn('Admin attachment read error:', err);
+    }
     e.target.value = '';
   };
 

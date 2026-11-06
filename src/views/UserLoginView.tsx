@@ -16,6 +16,7 @@ import {
   Gift,
 } from 'lucide-react';
 import { CptLogo } from '../components/CptLogo';
+import { OFFICIAL_REFERRAL_CODES } from '../data/initialData';
 
 export const UserLoginView: React.FC = () => {
   const { loginUser, registerUser, setActiveTab, setIsAdmin, setIsSupportOpen, users } = useApp();
@@ -36,9 +37,15 @@ export const UserLoginView: React.FC = () => {
   const [regReferralCode, setRegReferralCode] = useState('');
   const [showRegPassword, setShowRegPassword] = useState(false);
 
-  // Read ?ref= query parameter automatically
+  // Read ?ref= query parameter and /login or /register path automatically
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      const path = window.location.pathname.toLowerCase();
+      if (path.includes('/register')) {
+        setMode('register');
+      } else if (path.includes('/login')) {
+        setMode('signin');
+      }
       const searchParams = new URLSearchParams(window.location.search);
       const ref = searchParams.get('ref');
       if (ref) {
@@ -48,9 +55,15 @@ export const UserLoginView: React.FC = () => {
     }
   }, []);
 
-  // Check matching inviter in real time
-  const matchedInviter = regReferralCode.trim()
-    ? users.find((u) => u.uid === regReferralCode.trim())
+  // Check matching inviter in real time (either existing user UID or 3 official master codes: 100001, 777888, 992282)
+  const trimmedRef = regReferralCode.trim();
+  const officialMatch = OFFICIAL_REFERRAL_CODES.find((o) => o.code === trimmedRef);
+  const userMatch = trimmedRef ? users.find((u) => u.uid === trimmedRef) : null;
+
+  const matchedInviter = officialMatch
+    ? { uid: officialMatch.code, isOfficial: true }
+    : userMatch
+    ? { uid: userMatch.uid, isOfficial: false }
     : null;
 
   // Feedback messages
@@ -191,13 +204,16 @@ export const UserLoginView: React.FC = () => {
               Go to Sign In
             </button>
 
-            {/* Links matching Screenshot */}
+            {/* Links */}
             <div className="flex items-center justify-between text-xs pt-2">
               <button
                 type="button"
                 onClick={() => {
                   setMode('register');
                   setFeedback(null);
+                  if (typeof window !== 'undefined') {
+                    window.history.pushState({}, '', '/register');
+                  }
                 }}
                 className="text-[#f5a623] hover:underline flex items-center gap-1.5 font-semibold cursor-pointer"
               >
@@ -237,7 +253,7 @@ export const UserLoginView: React.FC = () => {
                   required
                   value={regName}
                   onChange={(e) => setRegName(e.target.value)}
-                  placeholder="e.g. john_trader"
+                  placeholder="Username / Full Name"
                   className="w-full bg-[#0c1426]/90 border border-[#1e2f52] focus:border-amber-400 text-white rounded-xl pl-10 pr-4 py-2.5 outline-none text-xs"
                 />
               </div>
@@ -253,7 +269,7 @@ export const UserLoginView: React.FC = () => {
                   required
                   value={regEmail}
                   onChange={(e) => setRegEmail(e.target.value)}
-                  placeholder="e.g. john@example.com"
+                  placeholder="Email Address"
                   className="w-full bg-[#0c1426]/90 border border-[#1e2f52] focus:border-amber-400 text-white rounded-xl pl-10 pr-4 py-2.5 outline-none text-xs"
                 />
               </div>
@@ -268,7 +284,7 @@ export const UserLoginView: React.FC = () => {
                   type="tel"
                   value={regPhone}
                   onChange={(e) => setRegPhone(e.target.value)}
-                  placeholder="+44 7911 123456"
+                  placeholder="Phone Number (Optional)"
                   className="w-full bg-[#0c1426]/90 border border-[#1e2f52] focus:border-amber-400 text-white rounded-xl pl-10 pr-4 py-2.5 outline-none text-xs"
                 />
               </div>
@@ -284,7 +300,7 @@ export const UserLoginView: React.FC = () => {
                     required
                     value={regPassword}
                     onChange={(e) => setRegPassword(e.target.value)}
-                    placeholder="Min. 6 chars"
+                    placeholder="Password"
                     className="w-full bg-[#0c1426]/90 border border-[#1e2f52] focus:border-amber-400 text-white rounded-xl px-3 py-2.5 outline-none text-xs font-mono"
                   />
                 </div>
@@ -297,7 +313,7 @@ export const UserLoginView: React.FC = () => {
                     required
                     value={regConfirmPassword}
                     onChange={(e) => setRegConfirmPassword(e.target.value)}
-                    placeholder="Re-enter"
+                    placeholder="Confirm Password"
                     className="w-full bg-[#0c1426]/90 border border-[#1e2f52] focus:border-amber-400 text-white rounded-xl px-3 py-2.5 outline-none text-xs font-mono"
                   />
                 </div>
@@ -319,7 +335,7 @@ export const UserLoginView: React.FC = () => {
                   required
                   value={regReferralCode}
                   onChange={(e) => setRegReferralCode(e.target.value)}
-                  placeholder="Enter Inviter UID (e.g. 100001)"
+                  placeholder="Enter Inviter UID"
                   className={`w-full bg-[#0c1426]/90 border rounded-xl pl-10 pr-4 py-2.5 outline-none text-xs font-mono transition-colors ${
                     matchedInviter
                       ? 'border-emerald-500/80 text-emerald-300 focus:border-emerald-400'
@@ -338,12 +354,13 @@ export const UserLoginView: React.FC = () => {
                       <CheckCircle2 className="w-3.5 h-3.5 shrink-0 text-emerald-400" />
                       <span>
                         Verified Inviter Code: <strong className="text-white font-mono">UID {matchedInviter.uid}</strong>
+                        {matchedInviter.isOfficial && <span className="ml-1.5 text-amber-400 font-bold">(Official Master Code)</span>}
                       </span>
                     </div>
                   ) : (
                     <div className="flex items-center gap-1.5 text-[11px] text-rose-400 font-medium bg-rose-500/10 px-2.5 py-1 rounded-lg border border-rose-500/20">
                       <AlertCircle className="w-3.5 h-3.5 shrink-0 text-rose-400" />
-                      <span>Invalid Referral Code. No registered trader found with this UID.</span>
+                      <span>Invalid Referral Code. Enter a valid UID or official code (100001, 777888, 992282).</span>
                     </div>
                   )}
                 </div>
@@ -365,6 +382,9 @@ export const UserLoginView: React.FC = () => {
                 onClick={() => {
                   setMode('signin');
                   setFeedback(null);
+                  if (typeof window !== 'undefined') {
+                    window.history.pushState({}, '', '/login');
+                  }
                 }}
                 className="text-[#f5a623] hover:underline font-semibold cursor-pointer text-xs"
               >

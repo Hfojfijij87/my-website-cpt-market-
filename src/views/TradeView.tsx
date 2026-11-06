@@ -153,7 +153,7 @@ export const TradeView: React.FC = () => {
         </div>
 
         {/* Sell (Bid) and Buy (Ask) Cards matching screenshot */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-4">
           {/* Sell Box */}
           <div className="bg-[#1c1216] border border-rose-900/40 rounded-xl p-4 text-center">
             <span className="text-[11px] font-bold text-rose-400 uppercase tracking-wider block">

@@ -11,6 +11,7 @@ import {
   FileText,
   ZoomIn,
 } from 'lucide-react';
+import { compressImageFile } from '../utils/imageCompressor';
 
 export const SupportModal: React.FC = () => {
   const {
@@ -85,20 +86,38 @@ export const SupportModal: React.FC = () => {
 
   if (!isSupportOpen) return null;
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     const isImage = file.type.startsWith('image/');
-    const reader = new FileReader();
-    reader.onload = () => {
-      setSelectedAttachment({
-        url: reader.result as string,
-        name: file.name,
-        type: isImage ? 'image' : 'file',
-      });
-    };
-    reader.readAsDataURL(file);
+
+    try {
+      if (isImage) {
+        const compressed = await compressImageFile(file, {
+          maxWidth: 960,
+          maxHeight: 960,
+          quality: 0.8,
+        });
+        setSelectedAttachment({
+          url: compressed,
+          name: file.name,
+          type: 'image',
+        });
+      } else {
+        const reader = new FileReader();
+        reader.onload = () => {
+          setSelectedAttachment({
+            url: reader.result as string,
+            name: file.name,
+            type: 'file',
+          });
+        };
+        reader.readAsDataURL(file);
+      }
+    } catch (err) {
+      console.warn('Error reading chat attachment:', err);
+    }
 
     // Reset input
     e.target.value = '';
