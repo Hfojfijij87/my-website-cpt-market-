@@ -65,7 +65,7 @@ export const AdminPanel: React.FC = () => {
     e.preventDefault();
     // Validate against superadmin account
     const superAdminUser = users.find((u) => u.role === 'superadmin' || u.uid === '100001');
-    const validPass = superAdminUser?.password || 'ripu2026';
+    const validPass = superAdminUser?.password || '99228222';
 
     const cleanPass = adminPassword.trim();
     if (
