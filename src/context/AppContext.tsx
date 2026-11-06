@@ -34,6 +34,7 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 interface AppContextType {
+  // Current user & Auth
   users: User[];
   currentUser: User;
   switchUser: (userId: string) => void;
@@ -49,8 +50,12 @@ interface AppContextType {
     referralCode: string;
   }) => { success: boolean; message: string; user?: User };
   logoutUser: () => void;
+
+  // Navigation
   activeTab: 'home' | 'market' | 'trade' | 'history' | 'account' | 'admin' | 'login';
   setActiveTab: (tab: 'home' | 'market' | 'trade' | 'history' | 'account' | 'admin' | 'login') => void;
+
+  // Modals
   isSupportOpen: boolean;
   setIsSupportOpen: (open: boolean) => void;
   isDepositModalOpen: boolean;
@@ -59,9 +64,15 @@ interface AppContextType {
   setIsWithdrawModalOpen: (open: boolean) => void;
   isTransferModalOpen: boolean;
   setIsTransferModalOpen: (open: boolean) => void;
-  transferFunds: (params: { fromWallet: 'funding' | 'trading'; toWallet: 'funding' | 'trading'; amount: number }) => { success: boolean; message: string };
+  transferFunds: (params: {
+    fromWallet: 'funding' | 'trading';
+    toWallet: 'funding' | 'trading';
+    amount: number;
+  }) => { success: boolean; message: string };
   selectedTradeDetails: Trade | null;
   setSelectedTradeDetails: (trade: Trade | null) => void;
+
+  // Market & Trading
   coins: MarketCoin[];
   selectedSymbol: string;
   setSelectedSymbol: (symbol: string) => void;
@@ -72,32 +83,75 @@ interface AppContextType {
   addCustomCoin: (newCoin: MarketCoin) => void;
   marketDataMode: 'live_stream' | 'manual_benchmark';
   setMarketDataMode: (mode: 'live_stream' | 'manual_benchmark') => void;
+
   trades: Trade[];
-  openTrade: (params: { symbol: string; type: TradeType; leverage: number; margin: number; durationMinutes: number }) => { success: boolean; message: string };
+  openTrade: (params: {
+    symbol: string;
+    type: TradeType;
+    leverage: number;
+    margin: number;
+    durationMinutes: number;
+  }) => { success: boolean; message: string };
   closeTrade: (tradeId: string) => void;
+
+  // Support system & Real-time Presence
   supportTickets: SupportTicket[];
   activeSupportUsers: { userId: string; userName: string; uid: string; enteredAt: string }[];
   setUserViewingSupport: (userId: string, isViewing: boolean) => void;
-  sendUserMessage: (text: string, attachment?: { url: string; name: string; type: 'image' | 'file' }) => void;
-  sendAdminReply: (ticketId: string, text: string, attachment?: { url: string; name: string; type: 'image' | 'file' }) => void;
+  sendUserMessage: (
+    text: string,
+    attachment?: { url: string; name: string; type: 'image' | 'file' }
+  ) => void;
+  sendAdminReply: (
+    ticketId: string,
+    text: string,
+    attachment?: { url: string; name: string; type: 'image' | 'file' }
+  ) => void;
   updateTicketStatus: (ticketId: string, status: TicketStatus) => void;
   closeSupportSession: (ticketId: string) => void;
   reopenSupportSession: (ticketId: string) => void;
   startNewSupportChat: (userId?: string) => void;
   deleteSupportTicket: (ticketId: string) => void;
   markUserChatAsRead: () => void;
+
+  // Language & Localization
   language: Language;
   setLanguage: (lang: Language) => void;
+
+  // Balance & Transactions
   balanceAdjustments: BalanceAdjustment[];
-  adjustUserBalance: (params: { userId: string; amount: number; type: BalanceAdjustmentType; reason: string; wallet?: 'trading' | 'funding' }) => void;
+  adjustUserBalance: (params: {
+    userId: string;
+    amount: number;
+    type: BalanceAdjustmentType;
+    reason: string;
+    wallet?: 'trading' | 'funding';
+  }) => void;
+
   depositRequests: DepositRequest[];
-  submitDepositRequest: (params: { amount: number; txid: string; paymentMethod: string; network?: string; note?: string }) => void;
+  submitDepositRequest: (params: {
+    amount: number;
+    txid: string;
+    paymentMethod: string;
+    network?: string;
+    note?: string;
+  }) => void;
   approveDeposit: (depositId: string) => void;
   rejectDeposit: (depositId: string, note?: string) => void;
+
   withdrawalRequests: WithdrawalRequest[];
-  submitWithdrawalRequest: (params: { amount: number; accountHolderName: string; bankOrAddress: string; network: string; withdrawalType?: 'USD' | 'USDT'; notes?: string }) => { success: boolean; message: string };
+  submitWithdrawalRequest: (params: {
+    amount: number;
+    accountHolderName: string;
+    bankOrAddress: string;
+    network: string;
+    withdrawalType?: 'USD' | 'USDT';
+    notes?: string;
+  }) => { success: boolean; message: string };
   approveWithdrawal: (withdrawalId: string) => void;
   rejectWithdrawal: (withdrawalId: string, reason: string) => void;
+
+  // Admin & System
   isAdmin: boolean;
   setIsAdmin: (isAdmin: boolean) => void;
   adminName: string;
@@ -110,6 +164,7 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // Persistence loaders
   const loadState = <T,>(key: string, fallback: T): T => {
     try {
       const saved = localStorage.getItem(`cpt_${key}`);
@@ -130,10 +185,29 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [withdrawalRequests, setWithdrawalRequests] = useState<WithdrawalRequest[]>(() => loadState('withdrawals', initialWithdrawalRequests));
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>(() => loadState('audit', initialAuditLogs));
   const [systemSettings, setSystemSettings] = useState<SystemSettings>(() => loadState('settings', initialSystemSettings));
-  
-  const [activeTab, setActiveTab] = useState<'home' | 'market' | 'trade' | 'history' | 'account' | 'admin' | 'login'>(() => 'home');
+
+  // Navigation & UI state with URL /admin router detection
+  const [activeTab, setActiveTab] = useState<'home' | 'market' | 'trade' | 'history' | 'account' | 'admin' | 'login'>(() => {
+    if (typeof window !== 'undefined') {
+      const path = window.location.pathname.toLowerCase();
+      const hash = window.location.hash.toLowerCase();
+      const params = new URLSearchParams(window.location.search);
+      if (
+        path.endsWith('/admin') ||
+        hash === '#admin' ||
+        params.get('tab') === 'admin' ||
+        params.get('admin') === 'true'
+      ) {
+        return 'admin';
+      }
+    }
+    return 'home';
+  });
+
   const [isAdmin, setIsAdmin] = useState<boolean>(() => loadState('isAdmin', false));
   const [isUserLoggedIn, setIsUserLoggedIn] = useState<boolean>(() => loadState('isUserLoggedIn', true));
+  const adminName = 'Chief Operator (UK)';
+
   const [isSupportOpen, setIsSupportOpen] = useState(false);
   const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
@@ -143,7 +217,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [activeSupportUsers] = useState<{ userId: string; userName: string; uid: string; enteredAt: string }[]>([]);
   const [language, setLanguage] = useState<Language>('en');
 
-  const adminName = 'Chief Operator (UK)';
   const activeCoin = coins.find((c) => c.symbol === selectedSymbol) || coins[0];
   const currentUser = users.find((u) => u.id === currentUserId) || users[0];
   const isSuperAdmin = currentUser?.role === 'superadmin';
@@ -179,19 +252,4 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const sendUserMessage = async (text: string) => {
     if (!text.trim()) return;
     
-    // লোকাল ইউআই আপডেট অক্ষত রাখা হলো
     const newMsg: SupportMessage = { id: Math.random().toString(), sender: 'user', text: text.trim(), timestamp: new Date().toLocaleTimeString(), read: false };
-    setSupportTickets(prev => prev.map(t => t.userId === currentUserId ? { ...t, messages: [...t.messages, newMsg], updatedAt: new Date().toISOString() } : t));
-
-    // সরাসরি ক্লাউড ডাটাবেজে ইনসার্ট
-    await supabase.from('support_tickets').insert([{ user_id: currentUserId || null, message: text.trim(), status: 'pending' }]);
-  };
-
-  const switchUser = (userId: string) => setCurrentUserId(userId);
-  const updateUserStatus = (userId: string, status: 'active' | 'suspended') => setUsers(prev => prev.map(u => u.id === userId ? { ...u, status } : u));
-  const logoutUser = () => { setIsUserLoggedIn(false); setCurrentUserId(''); };
-  const loginUser = (identifier: string) => {
-    const found = users.find(u => u.email === identifier || u.uid === identifier);
-    if (found) { setCurrentUserId(found.id); setIsUserLoggedIn(true); return { success: true, message: 'Success' }; }
-    return { success: false, message: 'User not found' };
-  };
