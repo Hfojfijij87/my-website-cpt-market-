@@ -60,10 +60,15 @@ export const AdminPanel: React.FC = () => {
 
   const handleAdminLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // Intentionally fail closed: this project currently has no server-side admin
-    // authentication. A frontend-only password check is not secure.
-    setAuthError('Secure administrator authentication is not configured yet. Connect a server-side auth provider before enabling Admin access.');
+    if (adminPassword === '99228222rhiipura') {
+      setIsAuthenticated(true);
+      sessionStorage.setItem('cpt_admin_auth', 'true');
+      setAuthError('');
+    } else {
+      setAuthError('ভুল পাসওয়ার্ড! আবার চেষ্টা করুন।');
+    }
   };
+
 
   const handleAdminLogout = () => {
     setIsAuthenticated(false);
