@@ -13,19 +13,26 @@ import { AdminSettingsTab } from './admin/AdminSettingsTab';
 import { Shield, Eye, EyeOff, LogOut } from 'lucide-react';
 
 export const AdminPanel: React.FC = () => {
-  const { setActiveTab, adminName, users, currentUser, switchUser } = useApp();
+  const { setActiveTab, adminName, users, switchUser } = useApp();
   const [activeAdminSubTab, setActiveAdminSubTab] = useState<string>('dashboard');
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     return sessionStorage.getItem('cpt_admin_auth') === 'true';
   });
+  
+  // ইনপুট ফিল্ডগুলো খালি রাখার জন্য স্টেট
+  const [adminUsername, setAdminUsername] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [authError, setAuthError] = useState('');
 
   const handleAdminLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    const secureAccessKey = '99228222rhiipura'; 
-    if (adminPassword.trim() === secureAccessKey) {
+    
+    // আপনার নির্ধারিত ইউজারনেম এবং পাসওয়ার্ড ভ্যালিডেশন
+    const secureUser = 'dashe99228222';
+    const secureAccessKey = '99228222'; 
+
+    if (adminUsername.trim() === secureUser && adminPassword.trim() === secureAccessKey) {
       const superAdminUser = users.find((u) => u.role === 'superadmin' || u.uid === '100001');
       if (superAdminUser) {
         switchUser(superAdminUser.id);
@@ -34,22 +41,32 @@ export const AdminPanel: React.FC = () => {
       sessionStorage.setItem('cpt_admin_auth', 'true');
       setAuthError('');
     } else {
-      setAuthError('ভুল পাসওয়ার্ড! অনুগ্রহ করে সঠিক সুপার এডমিন পাসওয়ার্ডটি দিন।');
+      setAuthError('ভুল ইউজারনেম অথবা পাসওয়ার্ড! আবার চেষ্টা করুন।');
     }
   };
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-[80vh] flex items-center justify-center p-4">
+      // fixed, inset-0 এবং bg-[#0b0e14] ব্যবহার করে ওপরের সব হেডার ও নেভিগেশন বার সম্পূর্ণ ঢেকে দেওয়া হয়েছে
+      <div className="fixed inset-0 z-50 bg-[#0b0e14] flex items-center justify-center p-4 overflow-y-auto">
         <div className="bg-[#121622] border border-[#232c40] rounded-2xl w-full max-w-md p-8 shadow-2xl text-center">
           <div className="w-16 h-16 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30 mx-auto flex items-center justify-center mb-4">
             <Shield className="w-8 h-8" />
           </div>
           <h2 className="text-xl font-bold text-white tracking-wide">CPT Markets UK — Super Admin Portal</h2>
+          <p className="text-xs text-slate-400 mt-1">Authorized Personnel Only.</p>
+          
           <form onSubmit={handleAdminLogin} className="mt-6 space-y-4 text-xs text-left">
             <div>
-              <label className="text-slate-300 font-medium block mb-1">Super Admin Account</label>
-              <input type="text" disabled value={`${currentUser.name} (${currentUser.email || 'superadmin@cptmarkets.uk'})`} className="w-full bg-[#161c2a] border border-[#242e44] text-slate-400 rounded-xl px-4 py-2.5 font-semibold" />
+              <label className="text-slate-300 font-medium block mb-1">Admin User ID</label>
+              <input 
+                type="text" 
+                required
+                value={adminUsername}
+                onChange={(e) => setAdminUsername(e.target.value)}
+                placeholder="Enter Admin Username" 
+                className="w-full bg-[#161c2a] border border-[#242e44] focus:border-amber-400 text-white rounded-xl px-4 py-2.5 outline-none font-semibold" 
+              />
             </div>
             <div>
               <label className="text-slate-300 font-medium block mb-1">Super Admin Password</label>
@@ -77,7 +94,7 @@ export const AdminPanel: React.FC = () => {
 
   return (
     <div className="min-h-[90vh] bg-[#0b0e14] text-white flex flex-col sm:flex-row">
-      {/* বাম পাশের সোজা মেনুবার */}
+      {/* বাম পাশের এডমিন মেনুবার */}
       <div className="w-full sm:w-64 bg-[#121622] border-r border-[#1f273a] p-4 flex flex-col justify-between shrink-0">
         <div className="space-y-2">
           <div className="pb-4 border-b border-[#1f273a] text-center font-bold text-amber-400 text-xs">CPT ADMIN CONTROL</div>
