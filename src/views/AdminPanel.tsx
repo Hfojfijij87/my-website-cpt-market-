@@ -30,6 +30,7 @@ import {
   ArrowLeft,
   Key,
 } from 'lucide-react';
+import { isSupabaseConfigured } from '../lib/supabase';
 
 export const AdminPanel: React.FC = () => {
   const {
@@ -48,11 +49,11 @@ export const AdminPanel: React.FC = () => {
   const [activeAdminSubTab, setActiveAdminSubTab] = useState<string>('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Admin security authentication
+  // Admin security authentication — username and password kept strictly confidential
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     return sessionStorage.getItem('cpt_admin_auth') === 'true';
   });
-  const [adminUsername, setAdminUsername] = useState('dashe99228222');
+  const [adminUsername, setAdminUsername] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
   const [authError, setAuthError] = useState('');
 
@@ -119,13 +120,13 @@ export const AdminPanel: React.FC = () => {
 
           <form onSubmit={handleAdminLogin} className="mt-6 space-y-4 text-xs text-left">
             <div>
-              <label className="text-slate-300 font-medium block mb-1">Admin Username / Email</label>
+              <label className="text-slate-300 font-medium block mb-1">Admin Username</label>
               <input
                 type="text"
                 required
                 value={adminUsername}
                 onChange={(e) => setAdminUsername(e.target.value)}
-                placeholder="Enter admin username or email"
+                placeholder="Enter Username"
                 className="w-full bg-[#161c2a] border border-[#242e44] focus:border-amber-400 text-white rounded-xl px-4 py-2.5 outline-none font-mono"
               />
             </div>
@@ -137,7 +138,7 @@ export const AdminPanel: React.FC = () => {
                 required
                 value={adminPassword}
                 onChange={(e) => setAdminPassword(e.target.value)}
-                placeholder="Admin Password"
+                placeholder="Enter Password"
                 className="w-full bg-[#161c2a] border border-[#242e44] focus:border-amber-400 text-white rounded-xl px-4 py-2.5 outline-none font-mono"
               />
             </div>
@@ -269,6 +270,21 @@ export const AdminPanel: React.FC = () => {
           <span className="hidden sm:inline-block text-slate-400">
             Operator: <strong className="text-amber-400">{adminName}</strong>
           </span>
+
+          {isSupabaseConfigured() ? (
+            <span className="hidden md:inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-[10px] text-emerald-300 font-mono">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+              Supabase Cloud: Synced
+            </span>
+          ) : (
+            <span
+              className="hidden md:inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-[10px] text-amber-300 font-mono"
+              title="Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in Vercel settings to activate global cloud sync"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+              Supabase: Connect in Vercel
+            </span>
+          )}
         </div>
 
         <div className="flex items-center gap-4">

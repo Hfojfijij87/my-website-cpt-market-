@@ -85,85 +85,61 @@ export const AdminDashboardTab: React.FC<{
         </div>
       )}
 
-      {/* Official Platform Master Referral Codes Section requested by admin */}
-      <div className="bg-gradient-to-r from-[#141b2c] to-[#121624] border border-amber-500/30 rounded-xl p-4 sm:p-5 shadow-xl">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3 border-b border-[#242e44] pb-3">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
-              ★
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <span>Official Platform Master Referral Codes (৩টি অফিশিয়াল মাস্টার রেফারেল কোড)</span>
-                <span className="text-[10px] bg-amber-500/20 text-amber-300 font-mono px-2 py-0.5 rounded-full border border-amber-500/30">
-                  Global Public Access
-                </span>
-              </h3>
-              <p className="text-[11px] text-slate-400 mt-0.5">
-                New traders without a personal inviter UID can register directly using any of these 3 verified master codes.
-              </p>
-            </div>
-          </div>
-          <span className="text-[11px] text-emerald-400 font-mono font-medium flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-emerald-400"></span> Always Active
+      {/* Sleek Compact Official Master Referral Codes Toolbar */}
+      <div className="bg-[#121623] border border-[#232c42] rounded-xl px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-3 shadow-md">
+        <div className="flex items-center gap-2">
+          <span className="text-amber-400 font-bold text-xs">★ Master Referrals:</span>
+          <span className="text-[11px] text-slate-400 hidden sm:inline">
+            Public invite codes for global user registrations
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {/* Master Code 1 */}
-          <div className="bg-[#0f1422] border border-[#232c41] rounded-xl p-3 flex items-center justify-between group hover:border-amber-500/40 transition-colors">
-            <div>
-              <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider block">Master Code 01</span>
-              <div className="font-mono text-lg font-bold text-amber-400">100001</div>
-              <span className="text-[10px] text-slate-400">Official Platform Master</span>
-            </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-1.5 bg-[#171d2c] border border-[#253047] rounded-lg px-2.5 py-1 text-xs">
+            <span className="text-slate-400 text-[10px]">Master:</span>
+            <span className="font-mono font-bold text-amber-400">100001</span>
             <button
               type="button"
               onClick={() => {
                 navigator.clipboard?.writeText('100001');
-                alert('Copied 100001 to clipboard!');
+                alert('Copied 100001!');
               }}
-              className="px-2.5 py-1.5 bg-[#1a2336] hover:bg-amber-400 hover:text-black text-slate-200 text-xs font-semibold rounded-lg transition-colors cursor-pointer"
+              className="text-slate-400 hover:text-white ml-1 text-[11px] font-semibold cursor-pointer"
+              title="Copy 100001"
             >
-              Copy
+              📋
             </button>
           </div>
 
-          {/* Master Code 2 */}
-          <div className="bg-[#0f1422] border border-[#232c41] rounded-xl p-3 flex items-center justify-between group hover:border-amber-500/40 transition-colors">
-            <div>
-              <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider block">VIP Trader Code 02</span>
-              <div className="font-mono text-lg font-bold text-amber-400">777888</div>
-              <span className="text-[10px] text-slate-400">VIP Global Trader Code</span>
-            </div>
+          <div className="flex items-center gap-1.5 bg-[#171d2c] border border-[#253047] rounded-lg px-2.5 py-1 text-xs">
+            <span className="text-slate-400 text-[10px]">VIP:</span>
+            <span className="font-mono font-bold text-amber-400">777888</span>
             <button
               type="button"
               onClick={() => {
                 navigator.clipboard?.writeText('777888');
-                alert('Copied 777888 to clipboard!');
+                alert('Copied 777888!');
               }}
-              className="px-2.5 py-1.5 bg-[#1a2336] hover:bg-amber-400 hover:text-black text-slate-200 text-xs font-semibold rounded-lg transition-colors cursor-pointer"
+              className="text-slate-400 hover:text-white ml-1 text-[11px] font-semibold cursor-pointer"
+              title="Copy 777888"
             >
-              Copy
+              📋
             </button>
           </div>
 
-          {/* Master Code 3 */}
-          <div className="bg-[#0f1422] border border-[#232c41] rounded-xl p-3 flex items-center justify-between group hover:border-amber-500/40 transition-colors">
-            <div>
-              <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider block">Agency Partner 03</span>
-              <div className="font-mono text-lg font-bold text-amber-400">992282</div>
-              <span className="text-[10px] text-slate-400">Official Agency Partner</span>
-            </div>
+          <div className="flex items-center gap-1.5 bg-[#171d2c] border border-[#253047] rounded-lg px-2.5 py-1 text-xs">
+            <span className="text-slate-400 text-[10px]">Partner:</span>
+            <span className="font-mono font-bold text-amber-400">992282</span>
             <button
               type="button"
               onClick={() => {
                 navigator.clipboard?.writeText('992282');
-                alert('Copied 992282 to clipboard!');
+                alert('Copied 992282!');
               }}
-              className="px-2.5 py-1.5 bg-[#1a2336] hover:bg-amber-400 hover:text-black text-slate-200 text-xs font-semibold rounded-lg transition-colors cursor-pointer"
+              className="text-slate-400 hover:text-white ml-1 text-[11px] font-semibold cursor-pointer"
+              title="Copy 992282"
             >
-              Copy
+              📋
             </button>
           </div>
         </div>

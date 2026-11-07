@@ -28,11 +28,22 @@ import {
   OFFICIAL_REFERRAL_CODES,
 } from '../data/initialData';
 import {
+  isSupabaseConfigured,
+  fetchUsersFromSupabase,
+  fetchTradesFromSupabase,
+  fetchTicketsFromSupabase,
+  fetchDepositsFromSupabase,
+  fetchWithdrawalsFromSupabase,
   syncUserToSupabase,
+  updateUserBalanceInSupabase,
+  updateUserStatusInSupabase,
   syncTradeToSupabase,
   syncTicketToSupabase,
   syncDepositToSupabase,
+  updateDepositStatusInSupabase,
   syncWithdrawalToSupabase,
+  updateWithdrawalStatusInSupabase,
+  subscribeToSupabaseRealtime,
 } from '../lib/supabase';
 
 interface AppContextType {
@@ -340,6 +351,84 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     currentUser.uid === '100001';
   const activeCoin = coins.find((c) => c.symbol === selectedSymbol) || coins[0];
 
+  // Central Supabase Cloud Sync & Realtime Listener
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+
+    let isMounted = true;
+
+    const hydrateFromSupabase = async () => {
+      try {
+        const [cloudUsers, cloudTrades, cloudTickets, cloudDeposits, cloudWithdrawals] = await Promise.all([
+          fetchUsersFromSupabase(),
+          fetchTradesFromSupabase(),
+          fetchTicketsFromSupabase(),
+          fetchDepositsFromSupabase(),
+          fetchWithdrawalsFromSupabase(),
+        ]);
+
+        if (!isMounted) return;
+
+        if (cloudUsers && cloudUsers.length > 0) {
+          setUsers((prev) => {
+            const existingMap = new Map(cloudUsers.map((u) => [u.id, u]));
+            prev.forEach((u) => {
+              if (!existingMap.has(u.id)) existingMap.set(u.id, u);
+            });
+            return Array.from(existingMap.values());
+          });
+        }
+        if (cloudTrades && cloudTrades.length > 0) {
+          setTrades(cloudTrades);
+        }
+        if (cloudTickets && cloudTickets.length > 0) {
+          setSupportTickets(cloudTickets);
+        }
+        if (cloudDeposits && cloudDeposits.length > 0) {
+          setDepositRequests(cloudDeposits);
+        }
+        if (cloudWithdrawals && cloudWithdrawals.length > 0) {
+          setWithdrawalRequests(cloudWithdrawals);
+        }
+      } catch (err) {
+        console.warn('[Supabase Cloud Hydration] notice:', err);
+      }
+    };
+
+    hydrateFromSupabase();
+
+    // Subscribe to Postgres Realtime changes
+    const channel = subscribeToSupabaseRealtime({
+      onUserUpdate: async () => {
+        const u = await fetchUsersFromSupabase();
+        if (u && isMounted) setUsers(u);
+      },
+      onTradeUpdate: async () => {
+        const t = await fetchTradesFromSupabase();
+        if (t && isMounted) setTrades(t);
+      },
+      onTicketUpdate: async () => {
+        const k = await fetchTicketsFromSupabase();
+        if (k && isMounted) setSupportTickets(k);
+      },
+      onDepositUpdate: async () => {
+        const d = await fetchDepositsFromSupabase();
+        if (d && isMounted) setDepositRequests(d);
+      },
+      onWithdrawalUpdate: async () => {
+        const w = await fetchWithdrawalsFromSupabase();
+        if (w && isMounted) setWithdrawalRequests(w);
+      },
+    });
+
+    return () => {
+      isMounted = false;
+      if (channel) {
+        channel.unsubscribe();
+      }
+    };
+  }, []);
+
   // Live Price Ticker & Trade PnL Updater
   useEffect(() => {
     const interval = setInterval(() => {
@@ -644,6 +733,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setUsers((prev) =>
       prev.map((u) => (u.id === userId ? { ...u, status } : u))
     );
+    updateUserStatusInSupabase(userId, status);
     const targetUser = users.find((u) => u.id === userId);
     logAuditAction(
       status === 'suspended' ? 'USER_SUSPENDED' : 'USER_ACTIVATED',
@@ -1143,6 +1233,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       })
     );
 
+    const finalTrading = isFunding ? targetUser.tradingBalance : newBalance;
+    const finalFunding = isFunding ? newBalance : targetUser.fundingBalance;
+    updateUserBalanceInSupabase(userId, finalTrading, finalFunding);
+
     const adjustment: BalanceAdjustment = {
       id: `adj-${Date.now()}`,
       userId,
@@ -1193,6 +1287,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       note,
     };
     setDepositRequests((prev) => [newReq, ...prev]);
+    syncDepositToSupabase(newReq);
   };
 
   const approveDeposit = (depositId: string) => {
@@ -1211,6 +1306,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           : d
       )
     );
+    updateDepositStatusInSupabase(depositId, 'approved');
 
     adjustUserBalance({
       userId: dep.userId,
@@ -1234,6 +1330,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           : d
       )
     );
+    updateDepositStatusInSupabase(depositId, 'rejected');
     const dep = depositRequests.find((d) => d.id === depositId);
     logAuditAction(
       'DEPOSIT_REJECTED',
@@ -1268,14 +1365,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return { success: false, message: 'Insufficient trading balance.' };
     }
 
+    const newTrading = Number((currentUser.tradingBalance - amount).toFixed(2));
     // Deduct funds immediately upon request
     setUsers((prev) =>
       prev.map((u) =>
         u.id === currentUser.id
-          ? { ...u, tradingBalance: Number((u.tradingBalance - amount).toFixed(2)) }
+          ? { ...u, tradingBalance: newTrading }
           : u
       )
     );
+    updateUserBalanceInSupabase(currentUser.id, newTrading, currentUser.fundingBalance);
 
     const newReq: WithdrawalRequest = {
       id: `wth-${Date.now().toString().slice(-6)}`,
@@ -1292,6 +1391,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
 
     setWithdrawalRequests((prev) => [newReq, ...prev]);
+    syncWithdrawalToSupabase(newReq);
 
     return {
       success: true,
@@ -1315,6 +1415,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           : w
       )
     );
+    updateWithdrawalStatusInSupabase(withdrawalId, 'approved');
 
     logAuditAction(
       'WITHDRAWAL_APPROVED',
@@ -1327,6 +1428,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const wth = withdrawalRequests.find((w) => w.id === withdrawalId);
     if (!wth || wth.status !== 'pending') return;
 
+    const refundedTrading = Number((currentUser.tradingBalance + wth.amount).toFixed(2));
     // Refund back to user's trading balance
     setUsers((prev) =>
       prev.map((u) =>
@@ -1335,6 +1437,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           : u
       )
     );
+    updateUserBalanceInSupabase(wth.userId, refundedTrading, currentUser.fundingBalance);
 
     setWithdrawalRequests((prev) =>
       prev.map((w) =>
@@ -1349,6 +1452,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           : w
       )
     );
+    updateWithdrawalStatusInSupabase(withdrawalId, 'rejected');
 
     logAuditAction(
       'WITHDRAWAL_REJECTED',

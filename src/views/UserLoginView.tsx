@@ -37,6 +37,13 @@ export const UserLoginView: React.FC = () => {
   const [regReferralCode, setRegReferralCode] = useState('');
   const [showRegPassword, setShowRegPassword] = useState(false);
 
+  // Animated registration success state
+  const [registeredSuccessUser, setRegisteredSuccessUser] = useState<{
+    name: string;
+    uid: string;
+    email: string;
+  } | null>(null);
+
   // Read ?ref= query parameter and /login or /register path automatically
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -113,6 +120,29 @@ export const UserLoginView: React.FC = () => {
       referralCode: trimmedRef,
     });
 
+    if (res.success && res.user) {
+      setRegisteredSuccessUser({
+        name: res.user.name,
+        uid: res.user.uid,
+        email: res.user.email,
+      });
+
+      // Automatically prefill login identifier with registered email/name
+      setLoginIdentifier(res.user.email);
+      setLoginPassword('');
+
+      // After 2.5 seconds, automatically smoothly redirect to Sign In form
+      setTimeout(() => {
+        setRegisteredSuccessUser(null);
+        setMode('signin');
+        setFeedback({
+          type: 'success',
+          message: `Registration successful! Your Account UID is ${res.user?.uid}. Please enter your password to sign in.`,
+        });
+      }, 2500);
+      return;
+    }
+
     if (!res.success) {
       setFeedback({ type: 'error', message: res.message });
     }
@@ -132,8 +162,60 @@ export const UserLoginView: React.FC = () => {
           </p>
         </div>
 
+        {/* Celebratory Registration Success Card requested by user */}
+        {registeredSuccessUser && (
+          <div className="bg-[#0e1628] border border-emerald-500/40 rounded-2xl p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-300">
+            <div className="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 border-2 border-emerald-400 mx-auto flex items-center justify-center animate-bounce shadow-lg shadow-emerald-500/30">
+              <CheckCircle2 className="w-9 h-9" />
+            </div>
+
+            <div>
+              <h2 className="text-xl font-bold text-white">Registration Successful!</h2>
+              <p className="text-xs text-emerald-300 font-medium mt-1">
+                রেজিস্ট্রেশন সফল হয়েছে!
+              </p>
+            </div>
+
+            <div className="bg-[#141f36] border border-[#213254] rounded-xl p-3.5 text-left space-y-2 text-xs font-mono">
+              <div className="flex justify-between">
+                <span className="text-slate-400">Name:</span>
+                <span className="text-white font-bold">{registeredSuccessUser.name}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Your UID:</span>
+                <span className="text-amber-400 font-bold">{registeredSuccessUser.uid}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Account Status:</span>
+                <span className="text-emerald-400 font-bold">Active & Ready</span>
+              </div>
+            </div>
+
+            <div className="pt-2 space-y-2">
+              <div className="flex items-center justify-center gap-2 text-xs text-slate-300">
+                <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
+                <span>Redirecting to Sign In page...</span>
+              </div>
+              <div className="w-full bg-[#1b253b] rounded-full h-1.5 overflow-hidden">
+                <div className="bg-gradient-to-r from-amber-400 to-emerald-400 h-full w-full animate-pulse"></div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setRegisteredSuccessUser(null);
+                  setMode('signin');
+                }}
+                className="w-full bg-amber-400 hover:bg-amber-300 text-black font-extrabold py-2.5 rounded-xl text-xs transition-all shadow-md active:scale-95 cursor-pointer mt-2"
+              >
+                Go to Sign In Now →
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Feedback message banner */}
-        {feedback && (
+        {!registeredSuccessUser && feedback && (
           <div
             className={`p-3 rounded-xl text-xs flex items-center gap-2 text-left ${
               feedback.type === 'success'
@@ -151,7 +233,7 @@ export const UserLoginView: React.FC = () => {
         )}
 
         {/* MODE 1: SIGN IN (Matches Screenshot exactly) */}
-        {mode === 'signin' && (
+        {!registeredSuccessUser && mode === 'signin' && (
           <form onSubmit={handleSignInSubmit} className="space-y-4 text-left text-xs">
             {/* Username / Email */}
             <div className="space-y-1.5">
@@ -234,7 +316,7 @@ export const UserLoginView: React.FC = () => {
         )}
 
         {/* MODE 2: CREATE ACCOUNT (REGISTRATION) */}
-        {mode === 'register' && (
+        {!registeredSuccessUser && mode === 'register' && (
           <form onSubmit={handleRegisterSubmit} className="space-y-3.5 text-left text-xs">
             <div className="text-center pb-1">
               <h3 className="text-base font-bold text-white">Create New Trader Account</h3>
