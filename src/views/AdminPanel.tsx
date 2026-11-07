@@ -107,7 +107,7 @@ export const AdminPanel: React.FC = () => {
     return (
       <div className="min-h-[80vh] flex items-center justify-center p-4">
         <div className="bg-[#121622] border border-[#232c40] rounded-2xl w-full max-w-md p-8 shadow-2xl relative text-center">
-          <div className="w-16 h-16 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30 mx-auto flex items-center justify-center mb-4">
+          <div className="w-16 h-16 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 mx-auto flex items-center justify-center mb-4">
             <Shield className="w-8 h-8" />
           </div>
 
@@ -127,7 +127,7 @@ export const AdminPanel: React.FC = () => {
                 value={adminUsername}
                 onChange={(e) => setAdminUsername(e.target.value)}
                 placeholder="Enter Username"
-                className="w-full bg-[#161c2a] border border-[#242e44] focus:border-amber-400 text-white rounded-xl px-4 py-2.5 outline-none font-mono"
+                className="w-full bg-[#161c2a] border border-[#242e44] focus:border-cyan-400 text-white rounded-xl px-4 py-2.5 outline-none font-mono"
               />
             </div>
 
@@ -139,7 +139,7 @@ export const AdminPanel: React.FC = () => {
                 value={adminPassword}
                 onChange={(e) => setAdminPassword(e.target.value)}
                 placeholder="Enter Password"
-                className="w-full bg-[#161c2a] border border-[#242e44] focus:border-amber-400 text-white rounded-xl px-4 py-2.5 outline-none font-mono"
+                className="w-full bg-[#161c2a] border border-[#242e44] focus:border-cyan-400 text-white rounded-xl px-4 py-2.5 outline-none font-mono"
               />
             </div>
 
@@ -147,7 +147,7 @@ export const AdminPanel: React.FC = () => {
 
             <button
               type="submit"
-              className="w-full bg-amber-400 hover:bg-amber-300 text-black font-extrabold py-3 rounded-xl transition-all shadow-md shadow-amber-500/20 cursor-pointer"
+              className="w-full bg-gradient-to-r from-cyan-400 to-sky-400 hover:from-cyan-300 hover:to-sky-300 text-black font-extrabold py-3 rounded-xl transition-all shadow-md shadow-cyan-500/25 cursor-pointer"
             >
               Sign In to Super Admin Desk
             </button>
@@ -229,7 +229,7 @@ export const AdminPanel: React.FC = () => {
       description: 'Live & Closed Positions',
       icon: TrendingUp,
       badge: activeTradesCount,
-      badgeColor: 'bg-amber-400 text-black',
+      badgeColor: 'bg-cyan-400 text-black',
     },
     {
       id: 'reports',
@@ -260,7 +260,7 @@ export const AdminPanel: React.FC = () => {
           </button>
 
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse"></span>
             <span className="font-bold text-white uppercase tracking-wider">
               CPT Markets Admin Portal
             </span>
@@ -268,7 +268,7 @@ export const AdminPanel: React.FC = () => {
 
           <span className="hidden sm:inline-block text-slate-400">|</span>
           <span className="hidden sm:inline-block text-slate-400">
-            Operator: <strong className="text-amber-400">{adminName}</strong>
+            Operator: <strong className="text-cyan-400">{adminName}</strong>
           </span>
 
           {isSupabaseConfigured() ? (
@@ -278,10 +278,10 @@ export const AdminPanel: React.FC = () => {
             </span>
           ) : (
             <span
-              className="hidden md:inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-[10px] text-amber-300 font-mono"
+              className="hidden md:inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-[10px] text-cyan-300 font-mono"
               title="Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in Vercel settings to activate global cloud sync"
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
               Supabase: Connect in Vercel
             </span>
           )}
@@ -289,15 +289,15 @@ export const AdminPanel: React.FC = () => {
 
         <div className="flex items-center gap-4">
           <div className="hidden sm:flex items-center gap-3 text-[11px] text-slate-400 font-mono">
-            <span>Online Traders: <strong className="text-emerald-400">{users.filter((u) => u.isOnline).length}</strong></span>
-            <span>Live Trades: <strong className="text-amber-400">{activeTradesCount}</strong></span>
+            <span>Online Traders: <strong className="text-cyan-400">{users.filter((u) => u.isOnline).length}</strong></span>
+            <span>Live Trades: <strong className="text-sky-400">{activeTradesCount}</strong></span>
           </div>
 
           <button
             onClick={() => setActiveTab('home')}
-            className="flex items-center gap-1.5 bg-[#1a2233] hover:bg-[#232d44] text-slate-200 border border-[#2b3752] px-3 py-1 rounded-lg text-xs font-medium transition-colors"
+            className="flex items-center gap-1.5 bg-[#142033] hover:bg-[#1a2c47] text-slate-200 border border-cyan-500/30 px-3 py-1 rounded-lg text-xs font-medium transition-colors"
           >
-            <ArrowLeft className="w-3.5 h-3.5 text-amber-400" />
+            <ArrowLeft className="w-3.5 h-3.5 text-cyan-400" />
             <span>Switch to Trading View</span>
           </button>
 
@@ -336,17 +336,17 @@ export const AdminPanel: React.FC = () => {
                   }}
                   className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-left transition-all cursor-pointer ${
                     isActive
-                      ? 'bg-amber-400 text-black font-extrabold shadow-md shadow-amber-500/20'
-                      : 'text-slate-300 hover:bg-[#151a28] hover:text-white border border-transparent'
+                      ? 'bg-gradient-to-r from-cyan-400 to-sky-400 text-slate-950 font-extrabold shadow-lg shadow-cyan-500/25'
+                      : 'text-slate-300 hover:bg-[#121c2e] hover:text-cyan-300 border border-transparent'
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <Icon className={`w-4 h-4 ${isActive ? 'text-black' : 'text-amber-400'}`} />
+                    <Icon className={`w-4 h-4 ${isActive ? 'text-slate-950' : 'text-cyan-400'}`} />
                     <div>
                       <span className="text-xs font-semibold block">{item.label}</span>
                       <span
                         className={`text-[10px] block ${
-                          isActive ? 'text-black/75' : 'text-slate-500'
+                          isActive ? 'text-slate-900/80' : 'text-slate-500'
                         }`}
                       >
                         {item.description}
@@ -357,7 +357,7 @@ export const AdminPanel: React.FC = () => {
                   {item.badge > 0 && (
                     <span
                       className={`text-[10px] font-bold px-1.5 py-0.2 rounded-full ${
-                        isActive ? 'bg-black text-amber-400' : item.badgeColor || 'bg-amber-400 text-black'
+                        isActive ? 'bg-black text-cyan-300' : item.badgeColor || 'bg-cyan-400 text-black'
                       }`}
                     >
                       {item.badge}

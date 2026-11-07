@@ -56,7 +56,7 @@ export const AdminDepositsTab: React.FC = () => {
           <button
             onClick={() => setStatusFilter('all')}
             className={`px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer ${
-              statusFilter === 'all' ? 'bg-amber-400 text-black font-bold' : 'text-slate-400 hover:text-white'
+              statusFilter === 'all' ? 'bg-cyan-400 text-black font-bold shadow-sm shadow-cyan-500/20' : 'text-slate-400 hover:text-white'
             }`}
           >
             All ({depositRequests.length})
@@ -65,7 +65,7 @@ export const AdminDepositsTab: React.FC = () => {
             onClick={() => setStatusFilter('pending')}
             className={`px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer ${
               statusFilter === 'pending'
-                ? 'bg-amber-400 text-black font-bold'
+                ? 'bg-cyan-400 text-black font-bold shadow-sm shadow-cyan-500/20'
                 : 'text-slate-400 hover:text-white'
             }`}
           >

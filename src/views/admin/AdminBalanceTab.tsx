@@ -114,12 +114,12 @@ export const AdminBalanceTab: React.FC = () => {
                   onClick={() => setSelectedUserId(u.id)}
                   className={`p-3 rounded-xl cursor-pointer border transition-all text-xs flex items-center justify-between ${
                     isSelected
-                      ? 'bg-amber-400/10 border-amber-400/60 shadow-sm'
+                      ? 'bg-cyan-400/10 border-cyan-400/60 shadow-sm'
                       : 'bg-[#161c2a] border-[#222a3d] hover:border-[#303b54]'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-full bg-amber-500/20 text-amber-400 font-bold flex items-center justify-center text-xs">
+                    <div className="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-400 font-bold flex items-center justify-center text-xs">
                       {u.name.charAt(0).toUpperCase()}
                     </div>
                     <div>
@@ -141,7 +141,7 @@ export const AdminBalanceTab: React.FC = () => {
               <span className="text-slate-400 font-medium block">Selected Account Overview:</span>
               <div className="flex justify-between">
                 <span className="text-slate-400">Trading Balance:</span>
-                <span className="font-mono font-bold text-amber-400">
+                <span className="font-mono font-bold text-cyan-400">
                   ${selectedUser.tradingBalance.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                 </span>
               </div>
@@ -163,7 +163,7 @@ export const AdminBalanceTab: React.FC = () => {
         <div className="lg:col-span-7">
           <form onSubmit={handleAdjustSubmit} className="space-y-4 text-xs">
             <h3 className="text-sm font-bold text-white">
-              Execute Balance Adjustment for <span className="text-amber-400">{selectedUser?.name}</span>
+              Execute Balance Adjustment for <span className="text-cyan-400">{selectedUser?.name}</span>
             </h3>
 
             {/* Adjustment Type Selector */}
@@ -226,7 +226,7 @@ export const AdminBalanceTab: React.FC = () => {
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="Enter amount (positive or negative)"
-                className="w-full bg-[#161c2b] border border-[#242e44] focus:border-amber-400 rounded-xl px-4 py-2.5 text-white font-mono text-sm outline-none"
+                className="w-full bg-[#161c2b] border border-[#242e44] focus:border-cyan-400 rounded-xl px-4 py-2.5 text-white font-mono text-sm outline-none"
               />
             </div>
 
@@ -241,7 +241,7 @@ export const AdminBalanceTab: React.FC = () => {
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 placeholder="e.g. VIP loyalty promotional bonus / Wire payment confirmation"
-                className="w-full bg-[#161c2b] border border-[#242e44] focus:border-amber-400 rounded-xl px-4 py-2.5 text-white outline-none"
+                className="w-full bg-[#161c2b] border border-[#242e44] focus:border-cyan-400 rounded-xl px-4 py-2.5 text-white outline-none"
               />
             </div>
 
@@ -252,7 +252,7 @@ export const AdminBalanceTab: React.FC = () => {
 
             <button
               type="submit"
-              className="w-full bg-amber-400 hover:bg-amber-300 text-black font-extrabold py-3 rounded-xl text-xs transition-all shadow-md shadow-amber-500/20 cursor-pointer"
+              className="w-full bg-gradient-to-r from-cyan-400 to-sky-400 hover:from-cyan-300 hover:to-sky-300 text-black font-extrabold py-3 rounded-xl text-xs transition-all shadow-md shadow-cyan-500/25 cursor-pointer"
             >
               Confirm & Post Balance Adjustment
             </button>
@@ -264,7 +264,7 @@ export const AdminBalanceTab: React.FC = () => {
       <div className="bg-[#121622] border border-[#21293c] rounded-xl p-5 shadow-xl space-y-4">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <h3 className="text-sm font-bold text-white flex items-center gap-2">
-            <History className="w-4 h-4 text-amber-400" />
+            <History className="w-4 h-4 text-cyan-400" />
             <span>Complete Balance Adjustment Audit Trail</span>
           </h3>
 

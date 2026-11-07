@@ -477,13 +477,13 @@ export const AdminSupportTab: React.FC = () => {
                     value={replyText}
                     onChange={(e) => setReplyText(e.target.value)}
                     placeholder={`Reply directly to ${selectedTicket.userName}... (User will see this in their Live Support)`}
-                    className="flex-1 bg-[#0b0e15] border border-[#21293c] focus:border-amber-400 rounded-xl px-4 py-2.5 text-xs text-white outline-none"
+                    className="flex-1 bg-[#0b0e15] border border-[#21293c] focus:border-cyan-400 rounded-xl px-4 py-2.5 text-xs text-white outline-none"
                   />
 
                   <button
                     type="submit"
                     disabled={!replyText.trim() && !adminAttachment}
-                    className="bg-amber-400 hover:bg-amber-300 disabled:opacity-40 text-black font-bold p-2.5 rounded-xl transition-all shadow-md shadow-amber-500/20 active:scale-95 cursor-pointer flex items-center gap-1.5 shrink-0"
+                    className="bg-gradient-to-r from-cyan-400 to-sky-400 hover:from-cyan-300 hover:to-sky-300 disabled:opacity-40 text-black font-extrabold p-2.5 rounded-xl transition-all shadow-md shadow-cyan-500/25 active:scale-95 cursor-pointer flex items-center gap-1.5 shrink-0"
                   >
                     <Send className="w-4 h-4" />
                     <span className="text-xs pr-1 font-extrabold">Reply</span>

@@ -49,7 +49,7 @@ export const AdminSettingsTab: React.FC = () => {
     <div className="space-y-6 max-w-4xl">
       <div>
         <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-          <Settings className="w-5 h-5 text-amber-400" />
+          <Settings className="w-5 h-5 text-cyan-400" />
           <span>System & Platform Operations Settings</span>
         </h2>
         <p className="text-xs text-slate-400">
@@ -72,7 +72,7 @@ export const AdminSettingsTab: React.FC = () => {
               type="text"
               value={platformName}
               onChange={(e) => setPlatformName(e.target.value)}
-              className="w-full bg-[#161c2a] border border-[#242e44] focus:border-amber-400 rounded-xl px-4 py-2 text-white outline-none"
+              className="w-full bg-[#161c2a] border border-[#242e44] focus:border-cyan-400 rounded-xl px-4 py-2 text-white outline-none"
             />
           </div>
 
@@ -82,7 +82,7 @@ export const AdminSettingsTab: React.FC = () => {
               type="email"
               value={supportEmail}
               onChange={(e) => setSupportEmail(e.target.value)}
-              className="w-full bg-[#161c2a] border border-[#242e44] focus:border-amber-400 rounded-xl px-4 py-2 text-white outline-none"
+              className="w-full bg-[#161c2a] border border-[#242e44] focus:border-cyan-400 rounded-xl px-4 py-2 text-white outline-none"
             />
           </div>
 
@@ -92,7 +92,7 @@ export const AdminSettingsTab: React.FC = () => {
               type="text"
               value={telegramSupport}
               onChange={(e) => setTelegramSupport(e.target.value)}
-              className="w-full bg-[#161c2a] border border-[#242e44] focus:border-amber-400 rounded-xl px-4 py-2 text-white outline-none"
+              className="w-full bg-[#161c2a] border border-[#242e44] focus:border-cyan-400 rounded-xl px-4 py-2 text-white outline-none"
             />
           </div>
 
@@ -103,7 +103,7 @@ export const AdminSettingsTab: React.FC = () => {
               step="any"
               value={tradingFeePercent}
               onChange={(e) => setTradingFeePercent(e.target.value)}
-              className="w-full bg-[#161c2a] border border-[#242e44] focus:border-amber-400 rounded-xl px-4 py-2 text-white font-mono outline-none"
+              className="w-full bg-[#161c2a] border border-[#242e44] focus:border-cyan-400 rounded-xl px-4 py-2 text-white font-mono outline-none"
             />
           </div>
 
@@ -114,7 +114,7 @@ export const AdminSettingsTab: React.FC = () => {
               step="any"
               value={minDeposit}
               onChange={(e) => setMinDeposit(e.target.value)}
-              className="w-full bg-[#161c2a] border border-[#242e44] focus:border-amber-400 rounded-xl px-4 py-2 text-white font-mono outline-none"
+              className="w-full bg-[#161c2a] border border-[#242e44] focus:border-cyan-400 rounded-xl px-4 py-2 text-white font-mono outline-none"
             />
           </div>
 
@@ -125,7 +125,7 @@ export const AdminSettingsTab: React.FC = () => {
               step="any"
               value={minWithdrawal}
               onChange={(e) => setMinWithdrawal(e.target.value)}
-              className="w-full bg-[#161c2a] border border-[#242e44] focus:border-amber-400 rounded-xl px-4 py-2 text-white font-mono outline-none"
+              className="w-full bg-[#161c2a] border border-[#242e44] focus:border-cyan-400 rounded-xl px-4 py-2 text-white font-mono outline-none"
             />
           </div>
         </div>
@@ -136,7 +136,7 @@ export const AdminSettingsTab: React.FC = () => {
             type="text"
             value={announcement}
             onChange={(e) => setAnnouncement(e.target.value)}
-            className="w-full bg-[#161c2a] border border-[#242e44] focus:border-amber-400 rounded-xl px-4 py-2 text-white outline-none"
+            className="w-full bg-[#161c2a] border border-[#242e44] focus:border-cyan-400 rounded-xl px-4 py-2 text-white outline-none"
           />
         </div>
 
@@ -151,7 +151,7 @@ export const AdminSettingsTab: React.FC = () => {
             type="button"
             onClick={() => setMaintenanceMode(!maintenanceMode)}
             className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer ${
-              maintenanceMode ? 'bg-amber-400' : 'bg-slate-700'
+              maintenanceMode ? 'bg-cyan-400' : 'bg-slate-700'
             }`}
           >
             <div
@@ -165,7 +165,7 @@ export const AdminSettingsTab: React.FC = () => {
         <div className="pt-2 flex justify-end">
           <button
             type="submit"
-            className="bg-amber-400 hover:bg-amber-300 text-black font-extrabold px-6 py-2.5 rounded-xl transition-all shadow-md shadow-amber-500/20 cursor-pointer flex items-center gap-2"
+            className="bg-gradient-to-r from-cyan-400 to-sky-400 hover:from-cyan-300 hover:to-sky-300 text-black font-extrabold px-6 py-2.5 rounded-xl transition-all shadow-md shadow-cyan-500/25 cursor-pointer flex items-center gap-2"
           >
             <Save className="w-4 h-4" />
             <span>Save Platform Settings</span>

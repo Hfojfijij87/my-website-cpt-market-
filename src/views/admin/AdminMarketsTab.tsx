@@ -136,7 +136,7 @@ export const AdminMarketsTab: React.FC = () => {
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-            <Activity className="w-5 h-5 text-amber-400" />
+            <Activity className="w-5 h-5 text-cyan-400" />
             <span>Coin & Market Simulation Engine</span>
           </h2>
           <p className="text-xs text-slate-400">
@@ -161,7 +161,7 @@ export const AdminMarketsTab: React.FC = () => {
             onClick={() => setMarketDataMode('manual_benchmark')}
             className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
               marketDataMode === 'manual_benchmark'
-                ? 'bg-amber-400 text-black shadow-sm'
+                ? 'bg-cyan-400 text-black font-bold shadow-sm shadow-cyan-500/20'
                 : 'text-slate-400 hover:text-white'
             }`}
             title="Halts random noise. Preserves exact benchmark price (API Failover / Offline Dev mode)"
@@ -193,7 +193,7 @@ export const AdminMarketsTab: React.FC = () => {
 
             <button
               onClick={() => setShowAddCoinModal(true)}
-              className="bg-amber-400 hover:bg-amber-300 text-black font-bold text-xs px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="bg-cyan-400 hover:bg-cyan-300 text-black font-extrabold text-xs px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm shadow-cyan-500/20"
             >
               <PlusCircle className="w-3.5 h-3.5" />
               <span>List Demo Token</span>
@@ -267,14 +267,14 @@ export const AdminMarketsTab: React.FC = () => {
           <div className="bg-[#121622] border border-[#21293c] rounded-2xl p-5 shadow-xl space-y-4">
             <div className="border-b border-[#20283c] pb-3 flex items-center justify-between">
               <div>
-                <span className="text-[11px] font-bold text-amber-400 uppercase tracking-wider block">
+                <span className="text-[11px] font-bold text-cyan-400 uppercase tracking-wider block">
                   Market Shock & Stress Testing Engine
                 </span>
                 <h3 className="text-base font-bold text-white">
-                  {selectedCoin.symbol} / USDT: <span className="font-mono text-amber-300">${selectedCoin.price.toLocaleString()}</span>
+                  {selectedCoin.symbol} / USDT: <span className="font-mono text-cyan-300">${selectedCoin.price.toLocaleString()}</span>
                 </h3>
               </div>
-              <span className="text-[11px] bg-blue-500/10 text-blue-300 border border-blue-500/20 px-2 py-0.5 rounded">
+              <span className="text-[11px] bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 px-2 py-0.5 rounded">
                 Simulated Sandbox
               </span>
             </div>
@@ -292,11 +292,11 @@ export const AdminMarketsTab: React.FC = () => {
                   value={customPriceInput}
                   onChange={(e) => setCustomPriceInput(e.target.value)}
                   placeholder="e.g. 78500.00"
-                  className="flex-1 bg-[#161c2a] border border-[#242e44] focus:border-amber-400 rounded-xl px-4 py-2.5 text-white font-mono text-sm outline-none"
+                  className="flex-1 bg-[#161c2a] border border-[#242e44] focus:border-cyan-400 rounded-xl px-4 py-2.5 text-white font-mono text-sm outline-none"
                 />
                 <button
                   type="submit"
-                  className="bg-amber-400 hover:bg-amber-300 text-black font-extrabold px-4 py-2.5 rounded-xl transition-all cursor-pointer whitespace-nowrap shadow-sm"
+                  className="bg-gradient-to-r from-cyan-400 to-sky-400 hover:from-cyan-300 hover:to-sky-300 text-black font-extrabold px-4 py-2.5 rounded-xl transition-all cursor-pointer whitespace-nowrap shadow-sm shadow-cyan-500/20"
                 >
                   Apply Price
                 </button>
@@ -392,7 +392,7 @@ export const AdminMarketsTab: React.FC = () => {
 
               <button
                 type="submit"
-                className="w-full bg-[#1a2336] hover:bg-[#232f48] text-amber-400 border border-amber-500/30 font-bold py-2.5 rounded-xl transition-colors cursor-pointer"
+                className="w-full bg-[#1a2336] hover:bg-[#232f48] text-cyan-400 border border-cyan-500/30 font-bold py-2.5 rounded-xl transition-colors cursor-pointer"
               >
                 Save Spread & Leverage
               </button>
@@ -406,7 +406,7 @@ export const AdminMarketsTab: React.FC = () => {
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-[#111522] border border-[#232c40] rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
             <h3 className="text-base font-bold text-white flex items-center gap-2">
-              <PlusCircle className="w-5 h-5 text-amber-400" />
+              <PlusCircle className="w-5 h-5 text-cyan-400" />
               <span>List New Custom / Demo Token</span>
             </h3>
             <p className="text-xs text-slate-400">
@@ -422,7 +422,7 @@ export const AdminMarketsTab: React.FC = () => {
                   value={newSymbol}
                   onChange={(e) => setNewSymbol(e.target.value)}
                   placeholder="e.g. CPT"
-                  className="w-full bg-[#161c2a] border border-[#242e44] focus:border-amber-400 rounded-xl px-4 py-2 text-white font-mono uppercase outline-none"
+                  className="w-full bg-[#161c2a] border border-[#242e44] focus:border-cyan-400 rounded-xl px-4 py-2 text-white font-mono uppercase outline-none"
                 />
               </div>
 
@@ -434,7 +434,7 @@ export const AdminMarketsTab: React.FC = () => {
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
                   placeholder="e.g. CPT Token / USDT"
-                  className="w-full bg-[#161c2a] border border-[#242e44] focus:border-amber-400 rounded-xl px-4 py-2 text-white outline-none"
+                  className="w-full bg-[#161c2a] border border-[#242e44] focus:border-cyan-400 rounded-xl px-4 py-2 text-white outline-none"
                 />
               </div>
 
@@ -447,7 +447,7 @@ export const AdminMarketsTab: React.FC = () => {
                   value={newPrice}
                   onChange={(e) => setNewPrice(e.target.value)}
                   placeholder="e.g. 5.50"
-                  className="w-full bg-[#161c2a] border border-[#242e44] focus:border-amber-400 rounded-xl px-4 py-2 text-white font-mono outline-none"
+                  className="w-full bg-[#161c2a] border border-[#242e44] focus:border-cyan-400 rounded-xl px-4 py-2 text-white font-mono outline-none"
                 />
               </div>
 
@@ -483,7 +483,7 @@ export const AdminMarketsTab: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="bg-amber-400 hover:bg-amber-300 text-black font-bold px-4 py-2 rounded-xl"
+                  className="bg-gradient-to-r from-cyan-400 to-sky-400 hover:from-cyan-300 hover:to-sky-300 text-black font-extrabold px-4 py-2 rounded-xl shadow-md shadow-cyan-500/20"
                 >
                   List & Launch Token
                 </button>

@@ -442,7 +442,7 @@ export const UserLoginView: React.FC = () => {
                   ) : (
                     <div className="flex items-center gap-1.5 text-[11px] text-rose-400 font-medium bg-rose-500/10 px-2.5 py-1 rounded-lg border border-rose-500/20">
                       <AlertCircle className="w-3.5 h-3.5 shrink-0 text-rose-400" />
-                      <span>Invalid Referral Code. Enter a valid UID or official code (100001, 777888, 992282).</span>
+                      <span>Invalid Referral Code. Please enter a valid inviter UID.</span>
                     </div>
                   )}
                 </div>

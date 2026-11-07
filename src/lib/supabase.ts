@@ -114,7 +114,8 @@ export const fetchTicketsFromSupabase = async (): Promise<SupportTicket[] | null
       status: row.status as 'pending' | 'answered' | 'closed',
       lastMessage: row.last_message || '',
       lastMessageTime: row.last_message_time || new Date().toISOString(),
-      unreadUserCount: 0,
+      unreadAdminCount: Number(row.unread_admin_count || 0),
+      unreadUserCount: Number(row.unread_user_count || 0),
       messages: Array.isArray(row.messages) ? row.messages : [],
     }));
   } catch (err) {

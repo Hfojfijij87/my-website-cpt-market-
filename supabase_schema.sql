@@ -52,6 +52,7 @@ CREATE TABLE IF NOT EXISTS public.support_tickets (
   user_name TEXT NOT NULL,
   user_email TEXT NOT NULL,
   status TEXT DEFAULT 'pending', -- pending, answered, closed
+  unread_admin_count INTEGER DEFAULT 0,
   last_message TEXT DEFAULT '',
   last_message_time TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   messages JSONB DEFAULT '[]'::jsonb

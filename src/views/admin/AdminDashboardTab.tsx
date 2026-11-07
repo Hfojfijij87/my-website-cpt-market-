@@ -85,65 +85,6 @@ export const AdminDashboardTab: React.FC<{
         </div>
       )}
 
-      {/* Sleek Compact Official Master Referral Codes Toolbar */}
-      <div className="bg-[#121623] border border-[#232c42] rounded-xl px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-3 shadow-md">
-        <div className="flex items-center gap-2">
-          <span className="text-amber-400 font-bold text-xs">★ Master Referrals:</span>
-          <span className="text-[11px] text-slate-400 hidden sm:inline">
-            Public invite codes for global user registrations
-          </span>
-        </div>
-
-        <div className="flex items-center gap-2 flex-wrap">
-          <div className="flex items-center gap-1.5 bg-[#171d2c] border border-[#253047] rounded-lg px-2.5 py-1 text-xs">
-            <span className="text-slate-400 text-[10px]">Master:</span>
-            <span className="font-mono font-bold text-amber-400">100001</span>
-            <button
-              type="button"
-              onClick={() => {
-                navigator.clipboard?.writeText('100001');
-                alert('Copied 100001!');
-              }}
-              className="text-slate-400 hover:text-white ml-1 text-[11px] font-semibold cursor-pointer"
-              title="Copy 100001"
-            >
-              📋
-            </button>
-          </div>
-
-          <div className="flex items-center gap-1.5 bg-[#171d2c] border border-[#253047] rounded-lg px-2.5 py-1 text-xs">
-            <span className="text-slate-400 text-[10px]">VIP:</span>
-            <span className="font-mono font-bold text-amber-400">777888</span>
-            <button
-              type="button"
-              onClick={() => {
-                navigator.clipboard?.writeText('777888');
-                alert('Copied 777888!');
-              }}
-              className="text-slate-400 hover:text-white ml-1 text-[11px] font-semibold cursor-pointer"
-              title="Copy 777888"
-            >
-              📋
-            </button>
-          </div>
-
-          <div className="flex items-center gap-1.5 bg-[#171d2c] border border-[#253047] rounded-lg px-2.5 py-1 text-xs">
-            <span className="text-slate-400 text-[10px]">Partner:</span>
-            <span className="font-mono font-bold text-amber-400">992282</span>
-            <button
-              type="button"
-              onClick={() => {
-                navigator.clipboard?.writeText('992282');
-                alert('Copied 992282!');
-              }}
-              className="text-slate-400 hover:text-white ml-1 text-[11px] font-semibold cursor-pointer"
-              title="Copy 992282"
-            >
-              📋
-            </button>
-          </div>
-        </div>
-      </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
         {/* Total Users */}
@@ -224,15 +165,15 @@ export const AdminDashboardTab: React.FC<{
         >
           <div className="flex items-center justify-between">
             <span className="text-xs text-slate-400">Live Active Trades</span>
-            <div className="p-2 rounded-lg bg-amber-500/10 text-amber-400 group-hover:scale-110 transition-transform">
+            <div className="p-2 rounded-lg bg-cyan-500/10 text-cyan-400 group-hover:scale-110 transition-transform">
               <Activity className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-bold font-mono text-amber-400 mt-2 flex items-center gap-2">
+          <div className="text-2xl font-bold font-mono text-cyan-400 mt-2 flex items-center gap-2">
             <span>{openTrades.length}</span>
             <span className="text-xs text-slate-400 font-normal">in progress</span>
           </div>
-          <span className="text-[11px] text-amber-400/80 mt-1 block">Monitoring live execution</span>
+          <span className="text-[11px] text-cyan-400/80 mt-1 block">Monitoring live execution</span>
         </div>
 
         {/* Total Trades History */}
@@ -303,7 +244,7 @@ export const AdminDashboardTab: React.FC<{
           </div>
           <button
             onClick={() => onNavigate('trades')}
-            className="text-xs text-amber-400 hover:underline"
+            className="text-xs text-cyan-400 hover:text-cyan-300 hover:underline"
           >
             View All Trades →
           </button>
@@ -323,7 +264,7 @@ export const AdminDashboardTab: React.FC<{
                   className="bg-[#161b2a] border border-[#242e44] rounded-xl p-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-amber-500/10 text-amber-400 font-bold flex items-center justify-center text-xs">
+                    <div className="w-8 h-8 rounded-full bg-cyan-500/10 text-cyan-400 font-bold flex items-center justify-center text-xs">
                       {t.userName.charAt(0).toUpperCase()}
                     </div>
                     <div>
@@ -373,12 +314,12 @@ export const AdminDashboardTab: React.FC<{
       <div className="bg-[#121622] border border-[#21293c] rounded-xl p-5 shadow-lg">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-bold text-white flex items-center gap-2">
-            <Clock className="w-4 h-4 text-amber-400" />
+            <Clock className="w-4 h-4 text-cyan-400" />
             <span>Recent Activities & Admin Audit Feed</span>
           </h3>
           <button
             onClick={() => onNavigate('reports')}
-            className="text-xs text-amber-400 hover:underline"
+            className="text-xs text-cyan-400 hover:text-cyan-300 hover:underline"
           >
             Audit Log History →
           </button>
@@ -392,7 +333,7 @@ export const AdminDashboardTab: React.FC<{
             >
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-amber-400">{log.action}</span>
+                  <span className="font-bold text-cyan-400">{log.action}</span>
                   <span className="text-slate-300 font-semibold">• {log.target}</span>
                 </div>
                 <p className="text-slate-400 text-[11px] mt-0.5">{log.details}</p>

@@ -50,7 +50,7 @@ export const AdminReportsTab: React.FC = () => {
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div>
           <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-            <FileText className="w-5 h-5 text-amber-400" />
+            <FileText className="w-5 h-5 text-cyan-400" />
             <span>Reports, Analytics & Audit History</span>
           </h2>
           <p className="text-xs text-slate-400">
@@ -63,7 +63,7 @@ export const AdminReportsTab: React.FC = () => {
           <button
             onClick={() => setActiveReport('financial')}
             className={`px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer ${
-              activeReport === 'financial' ? 'bg-amber-400 text-black font-bold' : 'text-slate-400 hover:text-white'
+              activeReport === 'financial' ? 'bg-cyan-400 text-black font-bold shadow-sm shadow-cyan-500/20' : 'text-slate-400 hover:text-white'
             }`}
           >
             Financial Summary
@@ -71,7 +71,7 @@ export const AdminReportsTab: React.FC = () => {
           <button
             onClick={() => setActiveReport('traders')}
             className={`px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer ${
-              activeReport === 'traders' ? 'bg-amber-400 text-black font-bold' : 'text-slate-400 hover:text-white'
+              activeReport === 'traders' ? 'bg-cyan-400 text-black font-bold shadow-sm shadow-cyan-500/20' : 'text-slate-400 hover:text-white'
             }`}
           >
             Trader-wise Reports
@@ -79,7 +79,7 @@ export const AdminReportsTab: React.FC = () => {
           <button
             onClick={() => setActiveReport('audit')}
             className={`px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer ${
-              activeReport === 'audit' ? 'bg-amber-400 text-black font-bold' : 'text-slate-400 hover:text-white'
+              activeReport === 'audit' ? 'bg-cyan-400 text-black font-bold shadow-sm shadow-cyan-500/20' : 'text-slate-400 hover:text-white'
             }`}
           >
             Admin Audit Logs ({auditLogs.length})
@@ -125,7 +125,7 @@ export const AdminReportsTab: React.FC = () => {
 
             <div className="bg-[#121622] border border-[#21293c] rounded-xl p-4">
               <span className="text-xs text-slate-400 block">Total Notional Turnover</span>
-              <span className="font-mono font-bold text-xl sm:text-2xl text-amber-400 mt-1 block">
+              <span className="font-mono font-bold text-xl sm:text-2xl text-cyan-400 mt-1 block">
                 ${totalTradesVolume.toLocaleString(undefined, { minimumFractionDigits: 0 })}
               </span>
               <span className="text-[11px] text-slate-500 mt-1 block">Combined leveraged volume</span>
@@ -157,7 +157,7 @@ export const AdminReportsTab: React.FC = () => {
                   <span className="font-semibold text-white block">Total Client Account Liability</span>
                   <span className="text-[11px] text-slate-400">Sum of all trader trading balances</span>
                 </div>
-                <span className="font-mono font-bold text-amber-400 text-sm">
+                <span className="font-mono font-bold text-cyan-400 text-sm">
                   ${users.reduce((acc, u) => acc + u.tradingBalance, 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                 </span>
               </div>
@@ -193,7 +193,7 @@ export const AdminReportsTab: React.FC = () => {
                   return (
                     <tr key={u.id} className="hover:bg-[#151a28] transition-colors">
                       <td className="px-4 py-3 font-semibold text-white capitalize">{u.name}</td>
-                      <td className="px-4 py-3 font-mono text-amber-400 font-bold">{u.uid}</td>
+                      <td className="px-4 py-3 font-mono text-cyan-400 font-bold">{u.uid}</td>
                       <td className="px-4 py-3 font-mono font-semibold text-slate-200">
                         ${u.tradingBalance.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                       </td>
@@ -268,7 +268,7 @@ export const AdminReportsTab: React.FC = () => {
                   filteredAuditLogs.map((log) => (
                     <tr key={log.id} className="hover:bg-[#151a28] transition-colors">
                       <td className="px-4 py-3">
-                        <span className="font-bold text-amber-400 font-mono text-[11px]">
+                        <span className="font-bold text-cyan-400 font-mono text-[11px]">
                           {log.action}
                         </span>
                       </td>

@@ -592,7 +592,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!referrer) {
       return {
         success: false,
-        message: `Invalid Referral Code "${cleanRef}". Please enter a valid inviter UID or official code (100001, 777888, 992282).`,
+        message: `Invalid Referral Code "${cleanRef}". Please enter a valid inviter UID.`,
       };
     }
 
@@ -632,9 +632,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     setUsers((prev) => [newUser, ...prev]);
     syncUserToSupabase(newUser);
-    setCurrentUserId(newId);
-    setIsUserLoggedIn(true);
-    setActiveTab('home');
+    // Do not auto-login; let user see registration success card and smoothly redirect to sign in
 
     // Automatically create a support welcome ticket for this new trader
     const welcomeTicket: SupportTicket = {

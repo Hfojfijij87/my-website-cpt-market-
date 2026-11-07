@@ -116,7 +116,7 @@ export const AdminUsersTab: React.FC = () => {
               onClick={() => setUserFilter('all')}
               className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${
                 userFilter === 'all'
-                  ? 'bg-amber-400 text-black shadow-sm'
+                  ? 'bg-cyan-400 text-black shadow-sm shadow-cyan-500/20'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
@@ -144,7 +144,7 @@ export const AdminUsersTab: React.FC = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by Name, Email, UID..."
-              className="w-full bg-[#141926] border border-[#232c40] focus:border-amber-400 rounded-xl pl-9 pr-4 py-2 text-xs text-white outline-none"
+              className="w-full bg-[#141926] border border-[#232c40] focus:border-cyan-400 rounded-xl pl-9 pr-4 py-2 text-xs text-white outline-none"
             />
           </div>
         </div>
@@ -181,14 +181,14 @@ export const AdminUsersTab: React.FC = () => {
                   >
                     <td className="px-4 py-3.5">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-amber-500/10 text-amber-400 font-bold flex items-center justify-center text-xs">
+                        <div className="w-8 h-8 rounded-full bg-cyan-500/10 text-cyan-400 font-bold flex items-center justify-center text-xs">
                           {user.name.charAt(0).toUpperCase()}
                         </div>
                         <div>
                           <div className="flex items-center gap-1.5 flex-wrap">
                             <span className="font-bold text-white capitalize">{user.name}</span>
                             {user.role === 'superadmin' && (
-                              <span className="bg-amber-400/20 text-amber-300 border border-amber-400/30 text-[9px] font-extrabold px-1.5 py-0.2 rounded-full uppercase">
+                              <span className="bg-cyan-400/20 text-cyan-300 border border-cyan-400/30 text-[9px] font-extrabold px-1.5 py-0.2 rounded-full uppercase">
                                 SUPER ADMIN
                               </span>
                             )}
@@ -207,10 +207,10 @@ export const AdminUsersTab: React.FC = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3.5 font-mono text-amber-400 font-semibold">{user.uid}</td>
+                    <td className="px-4 py-3.5 font-mono text-cyan-400 font-semibold">{user.uid}</td>
                     <td className="px-4 py-3.5 font-mono text-[11px]">
                       {user.referredByUid ? (
-                        <span className="text-amber-400 font-bold bg-amber-400/10 px-2 py-0.5 rounded border border-amber-400/20">
+                        <span className="text-cyan-400 font-bold bg-cyan-400/10 px-2 py-0.5 rounded border border-cyan-400/20">
                           UID: {user.referredByUid}
                         </span>
                       ) : (
@@ -275,7 +275,7 @@ export const AdminUsersTab: React.FC = () => {
                           className="bg-[#1b2334] hover:bg-[#253046] text-slate-200 p-1.5 rounded-lg transition-colors cursor-pointer"
                           title="View Complete User Trade & Transaction History"
                         >
-                          <History className="w-3.5 h-3.5 text-amber-400" />
+                          <History className="w-3.5 h-3.5 text-cyan-400" />
                         </button>
 
                         {/* Adjust Balance Modal */}
@@ -284,7 +284,7 @@ export const AdminUsersTab: React.FC = () => {
                           className="bg-[#1b2334] hover:bg-[#253046] text-slate-200 p-1.5 rounded-lg transition-colors cursor-pointer"
                           title="Detailed Balance Adjustment"
                         >
-                          <DollarSign className="w-3.5 h-3.5 text-amber-400" />
+                          <DollarSign className="w-3.5 h-3.5 text-cyan-400" />
                         </button>
 
                         {/* Suspend / Activate */}
@@ -323,7 +323,7 @@ export const AdminUsersTab: React.FC = () => {
               <div>
                 <h3 className="text-base font-bold text-white flex items-center gap-2">
                   <span>Trading & Transaction Record:</span>
-                  <span className="text-amber-400 capitalize">{selectedUserForHistory.name}</span>
+                  <span className="text-cyan-400 capitalize">{selectedUserForHistory.name}</span>
                   <span className="text-xs font-mono text-slate-400">(UID: {selectedUserForHistory.uid})</span>
                 </h3>
                 <span className="text-xs text-slate-400">
@@ -442,7 +442,7 @@ export const AdminUsersTab: React.FC = () => {
           <div className="bg-[#111522] border border-[#232c40] rounded-2xl w-full max-w-md p-6 shadow-2xl">
             <div className="flex items-center justify-between border-b border-[#20283c] pb-3 mb-4">
               <h3 className="text-sm font-bold text-white">
-                Adjust Balance: <span className="text-amber-400">{adjustModalUser.name}</span>
+                Adjust Balance: <span className="text-cyan-400">{adjustModalUser.name}</span>
               </h3>
               <button
                 onClick={() => setAdjustModalUser(null)}
@@ -460,7 +460,7 @@ export const AdminUsersTab: React.FC = () => {
                 <select
                   value={adjustType}
                   onChange={(e) => setAdjustType(e.target.value as any)}
-                  className="w-full bg-[#161c2a] border border-[#242e44] focus:border-amber-400 rounded-xl px-3 py-2 text-white outline-none"
+                  className="w-full bg-[#161c2a] border border-[#242e44] focus:border-cyan-400 rounded-xl px-3 py-2 text-white outline-none"
                 >
                   <option value="bonus">Promotional Bonus (+)</option>
                   <option value="deposit">Approved Manual Deposit (+)</option>
@@ -480,7 +480,7 @@ export const AdminUsersTab: React.FC = () => {
                   value={adjustAmount}
                   onChange={(e) => setAdjustAmount(e.target.value)}
                   placeholder="e.g. 500 or -250"
-                  className="w-full bg-[#161c2a] border border-[#242e44] focus:border-amber-400 rounded-xl px-3 py-2 text-white font-mono outline-none"
+                  className="w-full bg-[#161c2a] border border-[#242e44] focus:border-cyan-400 rounded-xl px-3 py-2 text-white font-mono outline-none"
                 />
               </div>
 
@@ -494,13 +494,13 @@ export const AdminUsersTab: React.FC = () => {
                   value={adjustReason}
                   onChange={(e) => setAdjustReason(e.target.value)}
                   placeholder="e.g. VIP promo bonus / Approved offline wire / Execution correction"
-                  className="w-full bg-[#161c2a] border border-[#242e44] focus:border-amber-400 rounded-xl p-3 text-white outline-none"
+                  className="w-full bg-[#161c2a] border border-[#242e44] focus:border-cyan-400 rounded-xl p-3 text-white outline-none"
                 ></textarea>
               </div>
 
               <button
                 type="submit"
-                className="w-full bg-amber-400 hover:bg-amber-300 text-black font-bold py-2.5 rounded-xl transition-all shadow-md shadow-amber-500/20"
+                className="w-full bg-gradient-to-r from-cyan-400 to-sky-400 hover:from-cyan-300 hover:to-sky-300 text-black font-extrabold py-2.5 rounded-xl transition-all shadow-md shadow-cyan-500/25 cursor-pointer"
               >
                 Apply Balance Change
               </button>

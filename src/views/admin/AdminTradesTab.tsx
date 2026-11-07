@@ -61,7 +61,7 @@ export const AdminTradesTab: React.FC = () => {
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div>
           <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-            <Activity className="w-5 h-5 text-amber-400" />
+            <Activity className="w-5 h-5 text-cyan-400" />
             <span>Trading Management (All Users)</span>
           </h2>
           <p className="text-xs text-slate-400">
@@ -74,7 +74,7 @@ export const AdminTradesTab: React.FC = () => {
           <button
             onClick={() => setStatusFilter('all')}
             className={`px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer ${
-              statusFilter === 'all' ? 'bg-amber-400 text-black font-bold' : 'text-slate-400 hover:text-white'
+              statusFilter === 'all' ? 'bg-cyan-400 text-black font-bold shadow-sm shadow-cyan-500/20' : 'text-slate-400 hover:text-white'
             }`}
           >
             All Trades ({trades.length})
@@ -83,7 +83,7 @@ export const AdminTradesTab: React.FC = () => {
             onClick={() => setStatusFilter('OPEN')}
             className={`px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer ${
               statusFilter === 'OPEN'
-                ? 'bg-amber-400 text-black font-bold'
+                ? 'bg-cyan-400 text-black font-bold shadow-sm shadow-cyan-500/20'
                 : 'text-slate-400 hover:text-white'
             }`}
           >
@@ -106,7 +106,7 @@ export const AdminTradesTab: React.FC = () => {
       <div className="bg-[#121622] border border-[#21293c] rounded-2xl p-4 shadow-xl space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
           <div className="flex items-center gap-2">
-            <Zap className="w-4 h-4 text-amber-400" />
+            <Zap className="w-4 h-4 text-cyan-400" />
             <span className="font-bold text-white uppercase tracking-wider">
               Market Benchmark & Stress-Test Simulator:
             </span>
@@ -131,7 +131,7 @@ export const AdminTradesTab: React.FC = () => {
               const target = coins.find((c) => c.symbol === e.target.value);
               if (target) setCalibratedPriceInput(target.price.toString());
             }}
-            className="bg-[#161c2a] border border-[#242e44] text-amber-400 font-bold rounded-xl px-3 py-2 text-xs outline-none"
+            className="bg-[#161c2a] border border-[#242e44] text-cyan-400 font-bold rounded-xl px-3 py-2 text-xs outline-none"
           >
             {coins.map((c) => (
               <option key={c.symbol} value={c.symbol}>
@@ -148,11 +148,11 @@ export const AdminTradesTab: React.FC = () => {
               value={calibratedPriceInput}
               onChange={(e) => setCalibratedPriceInput(e.target.value)}
               placeholder="Benchmark Price ($)"
-              className="flex-1 bg-[#161c2a] border border-[#242e44] focus:border-amber-400 rounded-xl px-3 py-2 text-white font-mono text-xs outline-none"
+              className="flex-1 bg-[#161c2a] border border-[#242e44] focus:border-cyan-400 rounded-xl px-3 py-2 text-white font-mono text-xs outline-none"
             />
             <button
               type="submit"
-              className="bg-amber-400 hover:bg-amber-300 text-black font-extrabold px-3 py-2 rounded-xl text-xs transition-colors cursor-pointer whitespace-nowrap shadow-sm"
+              className="bg-gradient-to-r from-cyan-400 to-sky-400 hover:from-cyan-300 hover:to-sky-300 text-black font-extrabold px-3 py-2 rounded-xl text-xs transition-colors cursor-pointer whitespace-nowrap shadow-sm shadow-cyan-500/20"
             >
               Apply Benchmark
             </button>
@@ -217,7 +217,7 @@ export const AdminTradesTab: React.FC = () => {
                 <th className="px-4 py-3">Trader & Symbol</th>
                 <th className="px-4 py-3">Type & Lev</th>
                 <th className="px-4 py-3">Entry Price</th>
-                <th className="px-4 py-3 text-amber-400">Exit / Current</th>
+                <th className="px-4 py-3 text-cyan-400">Exit / Current</th>
                 <th className="px-4 py-3">Margin & Size</th>
                 <th className="px-4 py-3">Profit / Loss</th>
                 <th className="px-4 py-3">Executed At</th>
@@ -241,7 +241,7 @@ export const AdminTradesTab: React.FC = () => {
                           <span className="font-bold text-white capitalize">{t.userName}</span>
                           <span className="text-[10px] text-slate-500 font-mono">#{t.id}</span>
                         </div>
-                        <span className="font-extrabold text-amber-400 text-xs block mt-0.5">
+                        <span className="font-extrabold text-cyan-400 text-xs block mt-0.5">
                           {t.symbol}/USDT
                         </span>
                       </td>
@@ -262,7 +262,7 @@ export const AdminTradesTab: React.FC = () => {
                       <td className="px-4 py-3.5 font-mono text-slate-200">
                         ${t.entryPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                       </td>
-                      <td className="px-4 py-3.5 font-mono font-bold text-amber-300 bg-amber-400/5">
+                      <td className="px-4 py-3.5 font-mono font-bold text-cyan-300 bg-cyan-400/5">
                         ${(t.exitPrice || t.currentPrice).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                       </td>
                       <td className="px-4 py-3.5 font-mono">
@@ -293,7 +293,7 @@ export const AdminTradesTab: React.FC = () => {
                         {t.status === 'OPEN' ? (
                           <button
                             onClick={() => closeTrade(t.id)}
-                            className="bg-amber-400 hover:bg-amber-300 text-black font-bold text-xs px-2.5 py-1 rounded-lg transition-colors cursor-pointer shadow-sm"
+                            className="bg-cyan-400 hover:bg-cyan-300 text-black font-extrabold text-xs px-2.5 py-1 rounded-lg transition-colors cursor-pointer shadow-sm shadow-cyan-500/20"
                             title="Force Close Trade"
                           >
                             Close Trade
